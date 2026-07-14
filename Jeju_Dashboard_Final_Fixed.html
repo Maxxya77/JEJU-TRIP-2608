@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제주 4박5일 · 8/3 - 8/7</title>
+<style>
+  @font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
+    font-weight: 45 920;
+  }
+
+  :root{
+    --sand: #F5EFE1;
+    --sand-deep: #ECE2CC;
+    --ink: #23241F;
+    --pine: #16261F;
+    --tangerine: #E37B34;
+    --tangerine-deep: #C4611F;
+    --teal: #1C6E74;
+    --teal-soft: #DCEEEC;
+    --moss: #5A7350;
+    --moss-soft: #E7EDDE;
+    --stone: #B7ACA0;
+    --line: rgba(35,36,31,0.12);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body {
+    margin:0; padding:0;
+    background: var(--sand);
+    color: var(--ink);
+    font-family: 'Pretendard', -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .dolgam {
+    height: 14px; width: 100%;
+    background-image:
+      radial-gradient(circle at 8% 50%, var(--stone) 0 3px, transparent 3.5px),
+      radial-gradient(circle at 24% 30%, var(--stone) 0 2.5px, transparent 3px),
+      radial-gradient(circle at 40% 60%, var(--stone) 0 3px, transparent 3.5px),
+      radial-gradient(circle at 58% 35%, var(--stone) 0 2px, transparent 2.5px),
+      radial-gradient(circle at 74% 55%, var(--stone) 0 3px, transparent 3.5px),
+      radial-gradient(circle at 90% 40%, var(--stone) 0 2.5px, transparent 3px);
+    opacity: 0.55; margin: 0 auto; max-width: 640px;
+  }
+
+  header { padding: 40px 22px 26px; max-width: 640px; margin: 0 auto; }
+  .eyebrow { font-size: 13px; letter-spacing: 0.14em; color: var(--tangerine-deep); font-weight: 700; text-transform: uppercase; }
+  h1 { font-size: 34px; line-height: 1.15; margin: 8px 0 4px; font-weight: 800; letter-spacing: -0.01em; }
+  .subtitle { font-size: 15px; color: rgba(35,36,31,0.62); margin-bottom: 22px; }
+
+  .quickcard { background: var(--pine); color: var(--sand); border-radius: 18px; padding: 20px 20px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+  .quickcard .item .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(245,239,225,0.55); margin-bottom: 3px; }
+  .quickcard .item .v { font-size: 15px; font-weight: 700; }
+  .quickcard .item.full { grid-column: 1 / -1; }
+
+  .viewswitch { display: flex; gap: 4px; background: var(--sand-deep); border-radius: 999px; padding: 4px; max-width: 640px; margin: 0 auto 18px; }
+  .viewswitch button { flex: 1; border: none; background: transparent; padding: 9px 0; font-family: inherit; font-size: 14px; font-weight: 700; color: rgba(35,36,31,0.5); border-radius: 999px; cursor: pointer; }
+  .viewswitch button.active { background: var(--pine); color: var(--sand); }
+
+  /* 모든 뷰는 기본적으로 숨기고 active 클래스가 있을 때만 보이게 설정 */
+  #view-schedule, #view-map, #view-food { display: none; max-width: 800px; margin: 0 auto; }
+  #view-schedule.active, #view-map.active, #view-food.active { display: block; }
+
+  .timeline { padding-left: 22px; border-left: 2px solid var(--sand-deep); margin: 20px; }
+  .stop { position: relative; padding-bottom: 24px; }
+  .stop::before { content: ''; position: absolute; left: -27px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--tangerine); border: 2px solid var(--sand); }
+  .stop .time { font-size: 12px; font-weight: 700; color: var(--tangerine-deep); }
+  .stop .name { font-size: 16.5px; font-weight: 800; margin: 4px 0; }
+
+  #jejumap { width: 100%; height: 60vh; border-radius: 12px; margin-bottom: 12px; }
+  .map-daychips { display: flex; justify-content: center; gap: 6px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none; max-width: 640px; margin: 0 auto; }
+  .map-daychips::-webkit-scrollbar{ display:none; }
+  .map-daychips .chip { flex: 0 0 auto; font-size: 12.5px; font-weight: 700; padding: 7px 12px; border-radius: 999px; border: 1.5px solid var(--line); background: white; cursor: pointer; white-space: nowrap; opacity: 0.45; }
+  .map-daychips .chip.on { opacity: 1; }
+  .map-legend { text-align: center; font-size: 12.5px; color: rgba(35,36,31,0.6); padding-bottom:40px; }
+
+  nav.daynav { position: sticky; top: 0; z-index: 10; background: rgba(245,239,225,0.92); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); padding: 10px 16px; }
+  nav.daynav .daynav-inner { display: flex; justify-content: center; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: 640px; margin: 0 auto; }
+  nav.daynav .daynav-inner::-webkit-scrollbar{ display:none; }
+  nav.daynav a { flex: 0 0 auto; text-decoration: none; color: var(--ink); background: white; border: 1px solid var(--line); padding: 7px 13px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+
+  main { max-width: 640px; margin: 0 auto; padding: 4px 0 60px; }
+  section.day { padding: 34px 22px 6px; scroll-margin-top: 58px; }
+  .day-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px; }
+  .day-num { font-size: 42px; font-weight: 800; color: var(--tangerine); line-height: 1; letter-spacing: -0.02em; }
+  .day-meta .date { font-size: 13px; color: rgba(35,36,31,0.5); font-weight: 600; }
+  .day-meta .title { font-size: 19px; font-weight: 800; }
+  .day-tags { display: flex; gap: 6px; margin: 10px 0 18px; flex-wrap: wrap; }
+  .tag { font-size: 11.5px; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
+  .tag.easy { background: var(--moss-soft); color: var(--moss); }
+  .tag.drive { background: var(--teal-soft); color: var(--teal); }
+  .tag.swim { background: #DDEBF7; color: #2A6FA8; }
+
+  .stop .name a { color: inherit; text-decoration: none; border-bottom: 1.5px dashed var(--teal); }
+  .stop .name a::after { content: ' 📍'; font-size: 0.75em; }
+  .stop .note { font-size: 13.5px; line-height: 1.5; color: rgba(35,36,31,0.72); }
+  .stop .badges { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+  .badge { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--sand-deep); color: rgba(35,36,31,0.65); }
+  .badge.water { background: #DDEBF7; color: #2A6FA8; }
+  .badge.flat { background: var(--moss-soft); color: var(--moss); }
+
+  footer { text-align: center; font-size: 12px; color: rgba(35,36,31,0.4); padding: 30px 22px 40px; }
+
+  /* =========================================
+     맛집 대시보드 구조
+     ========================================= */
+  .food-dashboard-wrapper { max-width: 900px; margin: 0 auto; padding: 0 10px 40px; }
+  .food-dashboard { display: flex; flex-direction: row; height: 70vh; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--line); }
+  
+  .food-sidebar { width: 45%; border-right: 1px solid var(--line); display: flex; flex-direction: column; background: #FAFAFA; }
+  .food-filter { padding: 15px; border-bottom: 1px solid var(--line); background: white; }
+  
+  /* 다중 선택 칩 UI */
+  .food-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .food-chips .chip {
+      font-size: 12px; font-weight: 700; padding: 6px 10px;
+      border-radius: 999px; border: 1.5px solid var(--line);
+      background: white; cursor: pointer; color: rgba(35,36,31,0.6);
+      transition: all 0.2s; user-select: none;
+  }
+  .food-chips .chip.on { background: var(--pine); color: var(--sand); border-color: var(--pine); }
+
+  .food-list-container { flex: 1; overflow-y: auto; padding: 0; }
+  .food-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); background: white; transition: background 0.2s; }
+  .food-item:hover { background: #F4F6F8; }
+  .food-info { flex: 1; padding-right: 15px; }
+  .food-name { font-size: 16px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+  .food-name a { color: inherit; text-decoration: none; border-bottom: 1.5px dashed var(--tangerine-deep); }
+  .food-category { font-size: 11px; font-weight: 700; color: var(--teal); background: var(--teal-soft); padding: 2px 6px; border-radius: 4px; display: inline-block; }
+  .food-desc { font-size: 12.5px; color: rgba(35,36,31,0.72); margin-top: 6px; line-height: 1.4; }
+
+  /* 토글 스위치 */
+  .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E0E0E0; transition: .3s; border-radius: 26px; }
+  .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  input:checked + .slider { background-color: var(--tangerine); }
+  input:checked + .slider:before { transform: translateX(22px); }
+
+  .food-map-container { width: 55%; position: relative; }
+  #foodmap { width: 100%; height: 100%; }
+
+  @media (max-width: 600px) {
+      .food-dashboard { flex-direction: column; height: 85vh; }
+      .food-sidebar { width: 100%; height: 50%; border-right: none; border-bottom: 2px solid var(--line); }
+      .food-map-container { width: 100%; height: 50%; }
+  }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Jeju · 8.3 — 8.7</div>
+  <h1>제주 4박5일</h1>
+  <div class="subtitle">서귀포 베이스 · 렌트카 · 커플 여행</div>
+
+  <div class="quickcard">
+    <div class="item"><div class="k">기간</div><div class="v">8/3(월) — 8/7(금)</div></div>
+    <div class="item"><div class="k">도착 / 반납</div><div class="v">18:00 도착 · 19:00 반납</div></div>
+    <div class="item"><div class="k">숙소</div><div class="v">서귀포 고정 (이동 없음)</div></div>
+    <div class="item"><div class="k">렌트카</div><div class="v">준중형 · 완전자차</div></div>
+    <div class="item full"><div class="k">유의사항</div><div class="v">발목 상태 고려 · 계단/장거리 보행 코스 최소화</div></div>
+  </div>
+</header>
+
+<div class="viewswitch">
+  <button id="btn-schedule" class="active">일정</button>
+  <button id="btn-map">전체 지도</button>
+  <button id="btn-food">맛집 (대시보드)</button>
+</div>
+
+<!-- =========================================
+     1. 일정 탭
+     ========================================= -->
+<div id="view-schedule" class="active">
+<nav class="daynav">
+  <div class="daynav-inner">
+    <a href="#d1">8/3 도착</a>
+    <a href="#d2">8/4 숲·쇠소깍</a>
+    <a href="#d3">8/5 동부</a>
+    <a href="#d4">8/6 서부</a>
+    <a href="#d5">8/7 출국</a>
+  </div>
+</nav>
+
+<main>
+  <!-- Day 1 -->
+  <section class="day" id="d1">
+    <div class="day-head">
+      <div class="day-num">01</div>
+      <div class="day-meta"><div class="date">8/3 (월)</div><div class="title">도착 · 서귀포 이동</div></div>
+    </div>
+    <div class="day-tags"><span class="tag easy">저녁 도착이라 가볍게</span></div>
+    <div class="timeline">
+      <div class="stop">
+        <div class="time">18:00</div>
+        <div class="name"><a href="https://map.naver.com/p/search/제주공항" target="_blank">제주공항 도착 · 렌트카 픽업</a></div>
+        <div class="note">픽업까지 약 30분 예상.</div>
+      </div>
+      <div class="stop">
+        <div class="time">18:30 — 19:30</div>
+        <div class="name">서귀포 숙소로 이동</div>
+        <div class="note">공항에서 편도 약 1시간.</div>
+        <div class="badges"><span class="badge">이동 1h</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">저녁</div>
+        <div class="name"><a href="https://naver.me/FgHDJag6" target="_blank">매일올레시장</a> · <a href="https://naver.me/G1wSFWS2" target="_blank">이중섭거리</a></div>
+        <div class="note">숙소 근처에서 가볍게 저녁 식사 + 산책. 시장은 밤 9시까지 운영.</div>
+        <div class="badges"><span class="badge flat">평지</span></div>
+      </div>
+    </div>
+  </section>
+  <div class="dolgam"></div>
+
+  <!-- Day 2 -->
+  <section class="day" id="d2">
+    <div class="day-head">
+      <div class="day-num">02</div>
+      <div class="day-meta"><div class="date">8/4 (화)</div><div class="title">샤이니숲길 · 쇠소깍</div></div>
+    </div>
+    <div class="day-tags"><span class="tag drive">편도 40~50분</span><span class="tag easy">보행 부담 적음</span></div>
+    <div class="timeline">
+      <div class="stop">
+        <div class="time">오전</div>
+        <div class="name"><a href="https://naver.me/x8tpDECV" target="_blank">샤이니숲길</a></div>
+        <div class="note">조천읍 교래리, 삼다수 목장 근처. 약 200m 짧은 숲길이라 5~10분이면 왕복.</div>
+        <div class="badges"><span class="badge flat">200m · 초단거리</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">점심</div>
+        <div class="name">남쪽으로 내려오며 식사</div>
+      </div>
+      <div class="stop">
+        <div class="time">오후</div>
+        <div class="name"><a href="https://naver.me/F42M0Dvw" target="_blank">쇠소깍</a></div>
+        <div class="note">투명카약 또는 테우 체험. 승선장까지 완만한 데크길 5~10분.</div>
+        <div class="badges"><span class="badge flat">완만한 길</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">저녁</div>
+        <div class="name">숙소 복귀</div>
+      </div>
+    </div>
+  </section>
+  <div class="dolgam"></div>
+
+  <!-- Day 3 -->
+  <section class="day" id="d3">
+    <div class="day-head">
+      <div class="day-num">03</div>
+      <div class="day-meta"><div class="date">8/5 (수)</div><div class="title">동부 · 김녕 수영</div></div>
+    </div>
+    <div class="day-tags"><span class="tag drive">편도 50분~1h</span><span class="tag swim">수영 있는 날</span></div>
+    <div class="timeline">
+      <div class="stop">
+        <div class="time">08:00</div>
+        <div class="name">서귀포 출발</div>
+        <div class="note">동부까지 편도 약 1시간이라 아침 일찍 출발 추천.</div>
+      </div>
+      <div class="stop">
+        <div class="time">오전</div>
+        <div class="name"><a href="https://naver.me/FtThG0s5" target="_blank">광치기해변</a></div>
+        <div class="note">성산일출봉을 배경으로 한 뷰 포인트. 완전 평지라 부담 없음.</div>
+        <div class="badges"><span class="badge flat">평지</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">오전~낮</div>
+        <div class="name"><a href="https://naver.me/xoH8AY7q" target="_blank">섭지코지</a></div>
+        <div class="note">등대 전망대까지 안 가고 가까운 전망 포인트까지만 짧게.</div>
+        <div class="badges"><span class="badge flat">완만</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">오후</div>
+        <div class="name"><a href="https://naver.me/GctrVhXR" target="_blank">김녕해수욕장</a> · 수영</div>
+        <div class="note">에메랄드빛으로 유명한 해변. 수영복 미리 챙기기.</div>
+        <div class="badges"><span class="badge water">수영</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">저녁</div>
+        <div class="name">서귀포 복귀</div>
+      </div>
+    </div>
+  </section>
+  <div class="dolgam"></div>
+
+  <!-- Day 4 -->
+  <section class="day" id="d4">
+    <div class="day-head">
+      <div class="day-num">04</div>
+      <div class="day-meta"><div class="date">8/6 (목)</div><div class="title">서부 · 알파카 · 금능 수영</div></div>
+    </div>
+    <div class="day-tags"><span class="tag drive">편도 50분~1h</span><span class="tag swim">수영 있는 날</span><span class="tag easy">동물 체험</span></div>
+    <div class="timeline">
+      <div class="stop">
+        <div class="time">08:00</div>
+        <div class="name">서귀포 출발</div>
+      </div>
+      <div class="stop">
+        <div class="time">오전</div>
+        <div class="name"><a href="https://naver.me/xprAP83t" target="_blank">도치돌 알파카목장</a></div>
+        <div class="note">넓은 초원이 평지라 걷기 편함. 알파카 먹이주기 체험.</div>
+        <div class="badges"><span class="badge flat">평지 초원</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">낮</div>
+        <div class="name"><a href="https://naver.me/Fr7ptPUY" target="_blank">금능해수욕장</a> · 수영</div>
+        <div class="note">협재 바로 옆, 비교적 한적한 편.</div>
+        <div class="badges"><span class="badge water">수영</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">저녁</div>
+        <div class="name"><a href="https://naver.me/I55awXy6" target="_blank">애월 카페거리</a></div>
+        <div class="note">오션뷰 카페 한 곳 골라 자리 잡고 노을 감상.</div>
+      </div>
+      <div class="stop">
+        <div class="time">밤</div>
+        <div class="name">서귀포 복귀</div>
+      </div>
+    </div>
+  </section>
+  <div class="dolgam"></div>
+
+  <!-- Day 5 -->
+  <section class="day" id="d5">
+    <div class="day-head">
+      <div class="day-num">05</div>
+      <div class="day-meta"><div class="date">8/7 (금)</div><div class="title">마무리 · 출국</div></div>
+    </div>
+    <div class="day-tags"><span class="tag easy">여유로운 날</span></div>
+    <div class="timeline">
+      <div class="stop">
+        <div class="time">오전</div>
+        <div class="name">숙소 근처에서 여유롭게 · 체크아웃</div>
+      </div>
+      <div class="stop">
+        <div class="time">오후</div>
+        <div class="name"><a href="https://naver.me/FxFtVyc6" target="_blank">이호테우해변</a></div>
+        <div class="note">공항에서 10분 거리. 말등대 포토스팟, 주차장 바로 앞이라 편함.</div>
+        <div class="badges"><span class="badge flat">평지</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">19:00</div>
+        <div class="name">렌트카 반납</div>
+      </div>
+      <div class="stop">
+        <div class="time">저녁</div>
+        <div class="name">출국</div>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+
+<!-- =========================================
+     2. 전체 지도 탭 
+     ========================================= -->
+<div id="view-map">
+  <div class="map-daychips">
+    <span class="chip on" data-day="all">전체</span>
+    <span class="chip on" data-day="d1">8/3 도착</span>
+    <span class="chip on" data-day="d2">8/4 숲·쇠소깍</span>
+    <span class="chip on" data-day="d3">8/5 동부</span>
+    <span class="chip on" data-day="d4">8/6 서부</span>
+    <span class="chip on" data-day="d5">8/7 출국</span>
+  </div>
+  <div style="padding:0 10px;">
+    <div id="jejumap"></div>
+  </div>
+  <div class="map-legend">점선은 실제 도로 경로가 아니라 방문 순서를 이어준 직선이에요.<br>칩을 눌러 특정 날짜만 켜고 끌 수 있어요.</div>
+</div>
+
+<!-- =========================================
+     3. 맛집 탭
+     ========================================= -->
+<div id="view-food">
+  <div class="food-dashboard-wrapper">
+    <div class="food-dashboard">
+      <!-- 좌측 리스트 -->
+      <div class="food-sidebar">
+        <div class="food-filter">
+          <div class="food-chips" id="category-chips">
+            <span class="chip on" data-category="all">전체 보기</span>
+            <span class="chip on" data-category="카페/디저트">카페/디저트</span>
+            <span class="chip on" data-category="고기">고기 (흑돼지/소고기)</span>
+            <span class="chip on" data-category="국/찌개">국/찌개 (해장국)</span>
+            <span class="chip on" data-category="해산물/향토">해산물/향토음식</span>
+            <span class="chip on" data-category="양식/기타">양식/기타</span>
+          </div>
+        </div>
+        <div class="food-list-container" id="food-list">
+          <!-- 자바스크립트로 리스트 자동 생성 -->
+        </div>
+      </div>
+      <!-- 우측 지도 -->
+      <div class="food-map-container">
+        <div id="foodmap"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>제주 4박5일 · 8.3 – 8.7</footer>
+
+<script>
+// =========================================
+// 1. 뷰 스위처 로직 통합 (버그 수정: active 클래스 정상 작동)
+// =========================================
+const btnSchedule = document.getElementById('btn-schedule');
+const btnMap = document.getElementById('btn-map');
+const btnFood = document.getElementById('btn-food');
+const viewSchedule = document.getElementById('view-schedule');
+const viewMap = document.getElementById('view-map');
+const viewFood = document.getElementById('view-food');
+
+let mainMapInit = false;
+let foodMapInit = false;
+let map; // 메인 지도
+let foodMap; // 맛집 지도
+
+function showView(name) {
+  // 버튼 클래스 토글
+  btnSchedule.classList.toggle('active', name === 'schedule');
+  btnMap.classList.toggle('active', name === 'map');
+  btnFood.classList.toggle('active', name === 'food');
+
+  // 핵심 수정 부분: 3개의 화면 모두 'active' 클래스 유무로 보이고 안 보이고를 결정함
+  viewSchedule.classList.toggle('active', name === 'schedule');
+  viewMap.classList.toggle('active', name === 'map');
+  viewFood.classList.toggle('active', name === 'food');
+
+  if (name === 'map') {
+    if (!mainMapInit) {
+      initMainMap();
+      mainMapInit = true;
+    } else {
+      setTimeout(() => map.invalidateSize(), 50);
+    }
+  }
+
+  if (name === 'food') {
+    if (!foodMapInit) {
+      initFoodDashboard();
+      foodMapInit = true;
+    } else {
+      setTimeout(() => foodMap.invalidateSize(), 50);
+    }
+  }
+}
+
+btnSchedule.addEventListener('click', () => showView('schedule'));
+btnMap.addEventListener('click', () => showView('map'));
+btnFood.addEventListener('click', () => showView('food'));
+
+
+// =========================================
+// 2. 전체 지도 탭
+// =========================================
+const BASE = { name: '서귀포 숙소', lat: 33.2448955, lng: 126.5644569 };
+const DAYS = {
+  d1: { color: '#E37B34', label: '8/3 도착', stops: [{ name: '제주공항', lat: 33.5070772, lng: 126.4934311 }, BASE] },
+  d2: { color: '#1C6E74', label: '8/4 숲·쇠소깍', stops: [BASE, { name: '샤이니숲길', lat: 33.4275002, lng: 126.6617022 }, { name: '쇠소깍', lat: 33.2523471, lng: 126.6238624 }, BASE] },
+  d3: { color: '#2A6FA8', label: '8/5 동부', stops: [BASE, { name: '광치기해변', lat: 33.4370693, lng: 126.9275071 }, { name: '섭지코지', lat: 33.4242095, lng: 126.931111 }, { name: '김녕해수욕장', lat: 33.5582327, lng: 126.759787 }, BASE] },
+  d4: { color: '#5A7350', label: '8/6 서부', stops: [BASE, { name: '알파카목장', lat: 33.4099012, lng: 126.3667667 }, { name: '금능해수욕장', lat: 33.3898565, lng: 126.235364 }, { name: '애월 카페거리', lat: 33.4623497, lng: 126.3103487 }, BASE] },
+  d5: { color: '#8B4B6B', label: '8/7 출국', stops: [BASE, { name: '이호테우해변', lat: 33.4979363, lng: 126.4531587 }, { name: '제주공항', lat: 33.5070772, lng: 126.4934311 }] }
+};
+
+const dayLayers = {};
+
+function initMainMap() {
+  map = L.map('jejumap', { scrollWheelZoom: false }).setView([33.40, 126.55], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 18 }).addTo(map);
+
+  Object.keys(DAYS).forEach(dayKey => {
+    const day = DAYS[dayKey];
+    const layerGroup = L.layerGroup().addTo(map);
+    const latlngs = day.stops.map(s => [s.lat, s.lng]);
+
+    L.polyline(latlngs, { color: day.color, weight: 3, dashArray: '6 6', opacity: 0.8 }).addTo(layerGroup);
+    day.stops.forEach((s, i) => {
+      const iconHtml = `
+        <div style="position:relative; font-family:sans-serif;">
+          <div style="position:absolute; left:-14px; top:-14px; width:28px; height:28px; background:${day.color}; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; border:2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index:2;">
+            ${i + 1}
+          </div>
+          <div style="position:absolute; left:16px; top:-12px; background:rgba(255,255,255,0.95); border:1.5px solid ${day.color}; color:#222; padding:3px 8px; border-radius:6px; font-size:12.5px; font-weight:700; white-space:nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index:1;">
+            ${s.name}
+          </div>
+        </div>
+      `;
+      const icon = L.divIcon({ 
+        className: '', 
+        html: iconHtml, 
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
+      L.marker([s.lat, s.lng], { icon }).addTo(layerGroup);
+    });
+    dayLayers[dayKey] = layerGroup;
+  });
+  setTimeout(() => map.invalidateSize(), 100);
+}
+
+const mapChips = document.querySelectorAll('.map-daychips .chip');
+mapChips.forEach(chip => {
+  chip.addEventListener('click', () => {
+    const dayKey = chip.dataset.day;
+    if (dayKey === 'all') {
+      const anyOff = Array.from(mapChips).some(c => c.dataset.day !== 'all' && !c.classList.contains('on'));
+      mapChips.forEach(c => {
+        if (c.dataset.day === 'all') return;
+        if (anyOff) { c.classList.add('on'); if (mainMapInit) dayLayers[c.dataset.day].addTo(map); }
+      });
+      chip.classList.add('on');
+      return;
+    }
+    chip.classList.toggle('on');
+    if (mainMapInit) {
+      if (chip.classList.contains('on')) { dayLayers[dayKey].addTo(map); } 
+      else { map.removeLayer(dayLayers[dayKey]); }
+    }
+  });
+});
+
+
+// =========================================
+// 3. 맛집 탭
+// =========================================
+const foodData = [
+  { name: "베케", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20베케", lat: 33.255, lng: 126.586, desc: "이끼와 숲이 어우러진 생태 정원 카페. 차콩크림라떼 추천." },
+  { name: "김녕떠오르길", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20김녕떠오르길", lat: 33.557, lng: 126.759, desc: "김녕 바닷길 인근 에메랄드빛 오션뷰 베이커리." },
+  { name: "델문도", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20함덕%20델문도", lat: 33.543, lng: 126.668, desc: "함덕 해수욕장 바다 위에 떠 있는 듯한 대형 오션뷰 카페." },
+  { name: "아라찐빵", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20아라찐빵", lat: 33.492, lng: 126.544, desc: "유튜브 핑계고 극찬. 부드러운 단일메뉴 팥찐빵." },
+  { name: "카페 글렌코", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20카페글렌코", lat: 33.435, lng: 126.772, desc: "스코틀랜드 초원 모티브의 대형 정원 카페. 수국/핑크뮬리." },
+  { name: "카페씨닉", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20카페씨닉", lat: 33.555, lng: 126.795, desc: "월정리 해변 정면 탁 트인 오션뷰 디저트 카페." },
+  { name: "하라케케", category: "카페/디저트", url: "https://map.naver.com/p/search/서귀포%20하라케케", lat: 33.238, lng: 126.536, desc: "야외 수영장 및 리조트 분위기. 식사 대용 메뉴도 있음." },
+  { name: "모노클제주", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20모노클제주", lat: 33.275, lng: 126.657, desc: "감귤 창고 개조. 붉은 벽돌 빈티지 감성 및 콜드브루." },
+  { name: "세러데이아일랜드", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20세러데이아일랜드%20카페", lat: 33.277, lng: 126.702, desc: "남원읍 시칠리아 감성. 부라타치즈 크루아상(부라타빠쬬)." },
+  { name: "카페 담소요", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20카페담소요", lat: 33.308, lng: 126.627, desc: "한라산 배경 한적한 정원형 브런치 카페. 밀크티 추천." },
+  { name: "빈투지", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20빈투지", lat: 33.516, lng: 126.528, desc: "제주시 건입동 조용하고 차분한 분위기의 스페셜티 로스터리." },
+  { name: "오설록 티 뮤지엄", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20오설록%20티%20뮤지엄", lat: 33.305, lng: 126.289, desc: "제주 대표 녹차 밭과 박물관. 녹차 롤케이크 필수." },
+  
+  { name: "별돈별 중문 본점", category: "고기", url: "https://map.naver.com/p/search/별돈별%20중문", lat: 33.257, lng: 126.441, desc: "귤밭/야자수 이국적 뷰. 와인과 즐기는 프리미엄 흑돼지." },
+  { name: "상록식당", category: "고기", url: "https://map.naver.com/p/search/제주%20상록식당", lat: 33.267, lng: 126.583, desc: "매콤달달 양념 삼겹살 연탄구이 노포 식당." },
+  { name: "차돌집", category: "고기", url: "https://map.naver.com/p/search/제주%20차돌집", lat: 33.485, lng: 126.492, desc: "연동 소고기 특수부위 맛집. 가성비 좋은 숯불구이." },
+  { name: "토평골", category: "고기", url: "https://map.naver.com/p/search/제주%20토평골", lat: 33.265, lng: 126.580, desc: "두툼하고 육즙 가득한 흑돼지를 연탄불에 구워주는 도민 맛집." },
+  
+  { name: "산지해장국", category: "국/찌개", url: "https://map.naver.com/p/search/제주%20산지해장국", lat: 33.515, lng: 126.532, desc: "소내장 듬뿍 칼칼한 내장탕. 도민 추천 해장국." },
+  { name: "신해바라기분식", category: "국/찌개", url: "https://map.naver.com/p/search/신해바라기분식%20한라대점", lat: 33.479, lng: 126.474, desc: "고기 듬뿍 걸쭉하고 매운 뚝배기 순두부찌개 로컬 맛집." },
+  { name: "대춘해장국 노형점", category: "국/찌개", url: "https://map.naver.com/p/search/대춘해장국%20노형점", lat: 33.481, lng: 126.471, desc: "맑고 깔끔한 국물의 선지 해장국 및 부드러운 내장탕." },
+  { name: "우진해장국", category: "국/찌개", url: "https://map.naver.com/p/search/제주%20우진해장국", lat: 33.511, lng: 126.520, desc: "제주산 고사리를 갈아 넣은 고사리 육개장 전국구 핫플." },
+  
+  { name: "대문집", category: "해산물/향토", url: "https://map.naver.com/p/search/제주%20대문집", lat: 33.396, lng: 126.257, desc: "갈치조림과 전복뚝배기. 깔끔하고 정갈한 제주 향토음식." },
+  { name: "한림수협 센터", category: "해산물/향토", url: "https://map.naver.com/p/search/한림수협다목적어업인지원센터", lat: 33.415, lng: 126.262, desc: "신선한 제철 횟감을 가성비 좋게 포장할 수 있는 회센터." },
+  { name: "쭈꾸쭈꾸쭈꾸미", category: "해산물/향토", url: "https://map.naver.com/p/search/제주%20쭈꾸쭈꾸쭈꾸미", lat: 33.488, lng: 126.495, desc: "매콤 중독성 양념 주꾸미 볶음. 남은 양념에 치즈 볶음밥." },
+  
+  { name: "리보스코화덕피자", category: "양식/기타", url: "https://map.naver.com/p/search/제주%20리보스코화덕피자", lat: 33.486, lng: 126.481, desc: "해녀 채취 톳 도우 위에 감자튀김을 올린 한라산 피자 시그니처." }
+];
+
+const activeMarkers = {};
+
+function initFoodDashboard() {
+  foodMap = L.map('foodmap', {zoomControl: false}).setView([33.36, 126.52], 10);
+  L.control.zoom({ position: 'topright' }).addTo(foodMap);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(foodMap);
+
+  const foodChips = document.querySelectorAll('#category-chips .chip');
+  foodChips.forEach(chip => {
+    chip.addEventListener('click', (e) => {
+      const cat = e.target.dataset.category;
+      if (cat === 'all') {
+        const isTurningOn = !e.target.classList.contains('on');
+        foodChips.forEach(c => c.classList.toggle('on', isTurningOn));
+      } else {
+        e.target.classList.toggle('on');
+        const allCatChips = Array.from(foodChips).filter(c => c.dataset.category !== 'all');
+        const allOn = allCatChips.every(c => c.classList.contains('on'));
+        document.querySelector('#category-chips .chip[data-category="all"]').classList.toggle('on', allOn);
+      }
+      renderFoodList();
+    });
+  });
+
+  renderFoodList();
+}
+
+function renderFoodList() {
+  const activeCats = Array.from(document.querySelectorAll('#category-chips .chip.on')).map(c => c.dataset.category);
+  const container = document.getElementById('food-list');
+  container.innerHTML = ''; 
+
+  foodData.forEach((item) => {
+    if (!activeCats.includes('all') && !activeCats.includes(item.category)) return;
+
+    const el = document.createElement('div');
+    el.className = 'food-item';
+    const isChecked = activeMarkers[item.name] ? 'checked' : '';
+
+    let displayCategory = item.category;
+    if (item.category === '고기') displayCategory = '고기 (흑돼지/소고기)';
+    if (item.category === '국/찌개') displayCategory = '국/찌개 (해장국)';
+    if (item.category === '해산물/향토') displayCategory = '해산물/향토음식';
+
+    el.innerHTML = `
+      <div class="food-info">
+        <div class="food-name"><a href="${item.url}" target="_blank">${item.name}</a></div>
+        <div class="food-category">${displayCategory}</div>
+        <div class="food-desc">${item.desc}</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" class="toggle-map-btn" data-name="${item.name}" ${isChecked}>
+        <span class="slider"></span>
+      </label>
+    `;
+    container.appendChild(el);
+  });
+
+  document.querySelectorAll('.toggle-map-btn').forEach(btn => {
+    btn.addEventListener('change', (e) => {
+      const name = e.target.dataset.name;
+      const data = foodData.find(d => d.name === name);
+
+      if (e.target.checked) {
+        const marker = L.marker([data.lat, data.lng]).addTo(foodMap)
+                        .bindPopup(`<b>${data.name}</b><br>${data.desc}`).openPopup();
+        activeMarkers[name] = marker;
+        foodMap.flyTo([data.lat, data.lng], 12, { duration: 0.5 });
+      } else {
+        if (activeMarkers[name]) {
+          foodMap.removeLayer(activeMarkers[name]);
+          delete activeMarkers[name];
+        }
+      }
+    });
+  });
+}
+
+// 화면이 처음 열릴 때 기본 화면을 '일정' 탭으로 세팅하여 바로 보이게 합니다.
+showView('schedule');
+</script>
+
+</body>
+</html>
