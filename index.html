@@ -282,7 +282,7 @@
   </section>
   <div class="dolgam"></div>
 
-  <!-- Day 4 (업데이트된 부분) -->
+  <!-- Day 4 -->
   <section class="day" id="d4">
     <div class="day-head">
       <div class="day-num">04</div>
@@ -312,9 +312,9 @@
         <div class="badges"><span class="badge water">수영</span></div>
       </div>
       <div class="stop">
-        <div class="time">오후 2-4시</div>
+        <div class="time">해질녘 (저녁)</div>
         <div class="name"><a href="https://map.naver.com/p/search/신도포구" target="_blank">신도포구</a></div>
-        <div class="note">금능에서 더 남쪽으로 내려와 도착. 2-4시쯤 야생 돌고래를 감상하기 좋은 시간대입니다. 걷는 거리가 거의 없어 발목 부담이 전혀 없습니다.</div>
+        <div class="note">금능에서 더 남쪽으로 내려와 도착. 해 질 무렵 바다 노을과 함께 야생 돌고래를 감상하기 좋은 시간대입니다. 걷는 거리가 거의 없어 발목 부담이 전혀 없습니다.</div>
         <div class="badges"><span class="badge flat">평지</span><span class="badge water">돌고래 스폿</span></div>
       </div>
       <div class="stop">
@@ -356,9 +356,13 @@
 </main>
 </div>
 
+<!-- =========================================
+     2. 전체 지도 탭 (업데이트됨)
+     ========================================= -->
 <div id="view-map">
   <div class="map-daychips">
-    <span class="chip on" data-day="all">전체</span>
+    <!-- "전체 보기"로 텍스트 변경 완료 -->
+    <span class="chip on" data-day="all">전체 보기</span>
     <span class="chip on" data-day="d1">8/3 도착</span>
     <span class="chip on" data-day="d2">8/4 숲·쇠소깍</span>
     <span class="chip on" data-day="d3">8/5 동부</span>
@@ -444,7 +448,6 @@ btnFood.addEventListener('click', () => showView('food'));
 
 const BASE = { name: '서귀포 숙소', lat: 33.2448955, lng: 126.5644569 };
 
-// 데이터 업데이트 부분: d4 배열의 좌표 방문 순서를 북쪽에서 남쪽으로 재배치
 const DAYS = {
   d1: { color: '#E37B34', label: '8/3 도착', stops: [{ name: '제주공항', lat: 33.5070772, lng: 126.4934311 }, BASE] },
   d2: { color: '#1C6E74', label: '8/4 숲·쇠소깍', stops: [BASE, { name: '샤이니숲길', lat: 33.4275002, lng: 126.6617022 }, { name: '쇠소깍', lat: 33.2523471, lng: 126.6238624 }, BASE] },
@@ -489,24 +492,45 @@ function initMainMap() {
   setTimeout(() => map.invalidateSize(), 100);
 }
 
+// =========================================
+// 지도 칩 다중/토글 선택 로직 (완벽 수정됨)
+// =========================================
 const mapChips = document.querySelectorAll('.map-daychips .chip');
 mapChips.forEach(chip => {
   chip.addEventListener('click', () => {
     const dayKey = chip.dataset.day;
+    
+    // 1. '전체 보기' 칩을 눌렀을 때
     if (dayKey === 'all') {
-      const anyOff = Array.from(mapChips).some(c => c.dataset.day !== 'all' && !c.classList.contains('on'));
+      const isTurningOn = !chip.classList.contains('on');
+      
       mapChips.forEach(c => {
-        if (c.dataset.day === 'all') return;
-        if (anyOff) { c.classList.add('on'); if (mainMapInit) dayLayers[c.dataset.day].addTo(map); }
+        c.classList.toggle('on', isTurningOn);
+        if (c.dataset.day !== 'all' && mainMapInit) {
+          if (isTurningOn) {
+            dayLayers[c.dataset.day].addTo(map);
+          } else {
+            map.removeLayer(dayLayers[c.dataset.day]);
+          }
+        }
       });
-      chip.classList.add('on');
       return;
     }
+
+    // 2. 개별 날짜 칩을 눌렀을 때
     chip.classList.toggle('on');
     if (mainMapInit) {
-      if (chip.classList.contains('on')) { dayLayers[dayKey].addTo(map); } 
-      else { map.removeLayer(dayLayers[dayKey]); }
+      if (chip.classList.contains('on')) { 
+        dayLayers[dayKey].addTo(map); 
+      } else { 
+        map.removeLayer(dayLayers[dayKey]); 
+      }
     }
+
+    // 3. 개별 날짜를 누른 후, '전체 보기' 칩의 상태를 동기화
+    const allDayChips = Array.from(mapChips).filter(c => c.dataset.day !== 'all');
+    const allOn = allDayChips.every(c => c.classList.contains('on'));
+    document.querySelector('.map-daychips .chip[data-day="all"]').classList.toggle('on', allOn);
   });
 });
 
