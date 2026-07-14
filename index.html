@@ -105,13 +105,13 @@
 
   footer { text-align: center; font-size: 12px; color: rgba(35,36,31,0.4); padding: 30px 22px 40px; }
 
+  /* 대시보드 PC 기본 스타일 */
   .food-dashboard-wrapper { max-width: 900px; margin: 0 auto; padding: 0 10px 40px; }
   .food-dashboard { display: flex; flex-direction: row; height: 75vh; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--line); }
   
   .food-sidebar { width: 45%; border-right: 1px solid var(--line); display: flex; flex-direction: column; background: #FAFAFA; }
   .food-filter { padding: 15px; border-bottom: 1px solid var(--line); background: white; }
   
-  /* 소분류 칩 자동 줄바꿈 복원 (PC/모바일 모두 한눈에 보이게) */
   .food-chips { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 4px; }
   .food-chips .chip {
       font-size: 12px; font-weight: 700; padding: 6px 10px;
@@ -120,6 +120,13 @@
       transition: all 0.2s; user-select: none; white-space: nowrap;
   }
   .food-chips .chip.on { background: var(--pine); color: var(--sand); border-color: var(--pine); }
+
+  /* 마스터 토글 스위치 CSS 분리 (반응형을 위해) */
+  .master-toggle-wrapper {
+      margin-top: 10px; display: flex; justify-content: space-between; align-items: center; 
+      background: #F4F6F8; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line);
+  }
+  .master-toggle-text { font-size: 13.5px; font-weight: 800; color: var(--pine); }
 
   .food-list-container { flex: 1; overflow-y: auto; padding: 0; }
   .food-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); background: white; transition: background 0.2s; }
@@ -140,10 +147,22 @@
   .food-map-container { width: 55%; position: relative; }
   #foodmap { width: 100%; height: 100%; }
 
+  /* =========================================
+     모바일 최적화 (다이어트 및 황금비율 적용)
+     ========================================= */
   @media (max-width: 600px) {
-      .food-dashboard { flex-direction: column; height: calc(100vh - 150px); }
-      .food-sidebar { width: 100%; height: 55%; border-right: none; border-bottom: 2px solid var(--line); }
-      .food-map-container { width: 100%; height: 45%; }
+      /* 대시보드 전체 높이를 화면에 꽉 차게 확장 */
+      .food-dashboard { flex-direction: column; height: calc(100vh - 110px); }
+      
+      /* 리스트 영역 65%, 지도 영역 35%로 비율 대폭 변경 */
+      .food-sidebar { width: 100%; height: 65%; border-right: none; border-bottom: 2px solid var(--line); }
+      .food-map-container { width: 100%; height: 35%; }
+      
+      /* 숨은 여백 줄이기 (리스트 공간 추가 확보) */
+      .food-filter { padding: 10px; }
+      .master-toggle-wrapper { margin-top: 6px; padding: 8px 12px; }
+      .master-toggle-text { font-size: 12.5px; }
+      .food-item { padding: 12px 15px; }
   }
 </style>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -156,7 +175,6 @@
   <h1>제주 4박5일</h1>
   <div class="subtitle">서귀포 베이스 · 렌트카 · 커플 여행</div>
 
-  <!-- 자바스크립트로 숨기기 위해 ID(quickcard-container) 부여 -->
   <div id="quickcard-container">
     <div class="quickcard">
       <div class="item"><div class="k">기간</div><div class="v">8/3(월) — 8/7(금)</div></div>
@@ -388,8 +406,9 @@
             <span class="chip on" data-category="해산물/향토">해산물/향토음식</span>
             <span class="chip on" data-category="양식/기타">양식/기타</span>
           </div>
-          <div class="master-toggle-wrapper" style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; background: #F4F6F8; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line);">
-            <span style="font-size: 13.5px; font-weight: 800; color: var(--pine);">현재 목록 지도에 모두 표시</span>
+          <!-- 깔끔하게 정리된 마스터 제어 스위치 -->
+          <div class="master-toggle-wrapper">
+            <span class="master-toggle-text">현재 목록 지도에 모두 표시</span>
             <label class="switch">
               <input type="checkbox" id="toggle-all-food">
               <span class="slider"></span>
@@ -423,17 +442,14 @@ let map;
 let foodMap; 
 
 function showView(name) {
-  // 탭 버튼 활성화 변경
   btnSchedule.classList.toggle('active', name === 'schedule');
   btnMap.classList.toggle('active', name === 'map');
   btnFood.classList.toggle('active', name === 'food');
 
-  // 화면 내용 변경
   viewSchedule.classList.toggle('active', name === 'schedule');
   viewMap.classList.toggle('active', name === 'map');
   viewFood.classList.toggle('active', name === 'food');
 
-  // 핵심 수정: '일정' 탭일 때만 상단 요약 박스를 보여주고, 나머지는 자바스크립트로 강제 숨김 처리
   if (quickcardContainer) {
     quickcardContainer.style.display = (name === 'schedule') ? 'block' : 'none';
   }
