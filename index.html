@@ -356,12 +356,8 @@
 </main>
 </div>
 
-<!-- =========================================
-     2. 전체 지도 탭 (업데이트됨)
-     ========================================= -->
 <div id="view-map">
   <div class="map-daychips">
-    <!-- "전체 보기"로 텍스트 변경 완료 -->
     <span class="chip on" data-day="all">전체 보기</span>
     <span class="chip on" data-day="d1">8/3 도착</span>
     <span class="chip on" data-day="d2">8/4 숲·쇠소깍</span>
@@ -387,6 +383,14 @@
             <span class="chip on" data-category="국/찌개">국/찌개 (해장국)</span>
             <span class="chip on" data-category="해산물/향토">해산물/향토음식</span>
             <span class="chip on" data-category="양식/기타">양식/기타</span>
+          </div>
+          <!-- 전체/소분류 통합 마스터 제어 스위치 추가 -->
+          <div class="master-toggle-wrapper" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; background: #F4F6F8; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--line);">
+            <span style="font-size: 13.5px; font-weight: 800; color: var(--pine);">현재 목록 지도에 모두 표시</span>
+            <label class="switch">
+              <input type="checkbox" id="toggle-all-food">
+              <span class="slider"></span>
+            </label>
           </div>
         </div>
         <div class="food-list-container" id="food-list">
@@ -492,15 +496,11 @@ function initMainMap() {
   setTimeout(() => map.invalidateSize(), 100);
 }
 
-// =========================================
-// 지도 칩 다중/토글 선택 로직 (완벽 수정됨)
-// =========================================
 const mapChips = document.querySelectorAll('.map-daychips .chip');
 mapChips.forEach(chip => {
   chip.addEventListener('click', () => {
     const dayKey = chip.dataset.day;
     
-    // 1. '전체 보기' 칩을 눌렀을 때
     if (dayKey === 'all') {
       const isTurningOn = !chip.classList.contains('on');
       
@@ -517,7 +517,6 @@ mapChips.forEach(chip => {
       return;
     }
 
-    // 2. 개별 날짜 칩을 눌렀을 때
     chip.classList.toggle('on');
     if (mainMapInit) {
       if (chip.classList.contains('on')) { 
@@ -527,7 +526,6 @@ mapChips.forEach(chip => {
       }
     }
 
-    // 3. 개별 날짜를 누른 후, '전체 보기' 칩의 상태를 동기화
     const allDayChips = Array.from(mapChips).filter(c => c.dataset.day !== 'all');
     const allOn = allDayChips.every(c => c.classList.contains('on'));
     document.querySelector('.map-daychips .chip[data-day="all"]').classList.toggle('on', allOn);
@@ -589,6 +587,20 @@ function initFoodDashboard() {
     });
   });
 
+  // 전체 제어(마스터 토글) 버튼 클릭 이벤트
+  document.getElementById('toggle-all-food').addEventListener('change', (e) => {
+    const isChecked = e.target.checked;
+    
+    // 현재 화면에 렌더링된 모든 맛집 스위치를 찾아서 상태를 일괄 적용
+    document.querySelectorAll('.toggle-map-btn').forEach(btn => {
+      if (btn.checked !== isChecked) {
+        btn.checked = isChecked;
+        // 개별 스위치의 change 이벤트를 강제로 실행하여 지도에 마커를 추가/제거
+        btn.dispatchEvent(new Event('change'));
+      }
+    });
+  });
+
   renderFoodList();
 }
 
@@ -639,8 +651,30 @@ function renderFoodList() {
           delete activeMarkers[name];
         }
       }
+      // 개별 버튼을 누를 때마다 마스터 버튼 상태 업데이트
+      updateMasterFoodToggle();
     });
   });
+
+  // 카테고리를 눌러서 화면이 새로 그려질 때, 마스터 버튼 상태 동기화
+  updateMasterFoodToggle();
+}
+
+function updateMasterFoodToggle() {
+  const visibleToggles = Array.from(document.querySelectorAll('.toggle-map-btn'));
+  const masterToggle = document.getElementById('toggle-all-food');
+  
+  if (!masterToggle) return;
+  
+  // 리스트에 보여지는 맛집이 아예 없으면 마스터 버튼을 끕니다.
+  if (visibleToggles.length === 0) {
+    masterToggle.checked = false;
+    return;
+  }
+  
+  // 현재 화면에 있는 모든 개별 스위치가 켜져 있는지 확인
+  const allChecked = visibleToggles.every(btn => btn.checked);
+  masterToggle.checked = allChecked;
 }
 
 showView('schedule');
