@@ -75,6 +75,12 @@
      1. 일정 조립 탭
      ========================================= */
   .day-section { margin-bottom: 40px; }
+  .day-section.is-today .day-head { border-bottom-color: var(--tangerine); }
+  .day-section.is-today .day-num { position: relative; }
+  .today-badge {
+    font-size: 11px; font-weight: 800; color: white; background: var(--tangerine);
+    padding: 3px 9px; border-radius: 999px; margin-left: 4px; vertical-align: middle;
+  }
   .day-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; border-bottom: 2px solid var(--line); padding-bottom: 8px; }
   .day-num { font-size: 28px; font-weight: 800; color: var(--tangerine); line-height: 1; letter-spacing: -0.02em; }
   .day-title { font-size: 17px; font-weight: 800; }
@@ -201,23 +207,23 @@
 
       <div id="view-schedule" class="tab-content active">
         <div class="day-section" id="sec-d1">
-          <div class="day-head"><div class="day-num">01</div><div class="day-title">8/3 (월) · 도착 및 이동</div></div>
+          <div class="day-head"><div class="day-num">01</div><div class="day-title">8/3 (월) · 도착 및 이동<span class="today-badge" id="badge-d1" style="display:none;">오늘</span></div></div>
           <div class="timeline" id="timeline-d1"><div style="color:#888; font-size:13px;">불러오는 중...</div></div>
         </div>
         <div class="day-section" id="sec-d2">
-          <div class="day-head"><div class="day-num">02</div><div class="day-title">8/4 (화) · 자연과 힐링</div></div>
+          <div class="day-head"><div class="day-num">02</div><div class="day-title">8/4 (화) · 자연과 힐링<span class="today-badge" id="badge-d2" style="display:none;">오늘</span></div></div>
           <div class="timeline" id="timeline-d2"></div>
         </div>
         <div class="day-section" id="sec-d3">
-          <div class="day-head"><div class="day-num">03</div><div class="day-title">8/5 (수) · 동부 바다</div></div>
+          <div class="day-head"><div class="day-num">03</div><div class="day-title">8/5 (수) · 동부 바다<span class="today-badge" id="badge-d3" style="display:none;">오늘</span></div></div>
           <div class="timeline" id="timeline-d3"></div>
         </div>
         <div class="day-section" id="sec-d4">
-          <div class="day-head"><div class="day-num">04</div><div class="day-title">8/6 (목) · 서부 탐방</div></div>
+          <div class="day-head"><div class="day-num">04</div><div class="day-title">8/6 (목) · 서부 탐방<span class="today-badge" id="badge-d4" style="display:none;">오늘</span></div></div>
           <div class="timeline" id="timeline-d4"></div>
         </div>
         <div class="day-section" id="sec-d5">
-          <div class="day-head"><div class="day-num">05</div><div class="day-title">8/7 (금) · 마무리 및 출국</div></div>
+          <div class="day-head"><div class="day-num">05</div><div class="day-title">8/7 (금) · 마무리 및 출국<span class="today-badge" id="badge-d5" style="display:none;">오늘</span></div></div>
           <div class="timeline" id="timeline-d5"></div>
         </div>
       </div>
@@ -437,6 +443,34 @@ document.getElementById('toggle-all-explore').addEventListener('change', (e) => 
 });
 
 renderExploreList(); 
+
+// --- 오늘 날짜 자동 하이라이트 ---
+(function highlightToday() {
+  const TRIP_DAYS = {
+    d1: new Date(2026, 7, 3),  // 8/3
+    d2: new Date(2026, 7, 4),  // 8/4
+    d3: new Date(2026, 7, 5),  // 8/5
+    d4: new Date(2026, 7, 6),  // 8/6
+    d5: new Date(2026, 7, 7),  // 8/7
+  };
+  const now = new Date();
+  const todayKey = Object.keys(TRIP_DAYS).find(key => {
+    const d = TRIP_DAYS[key];
+    return now.getFullYear() === d.getFullYear() && now.getMonth() === d.getMonth() && now.getDate() === d.getDate();
+  });
+
+  if (!todayKey) return; // 여행 기간이 아니면 평소 상태 그대로
+
+  const section = document.getElementById(`sec-${todayKey}`);
+  const badge = document.getElementById(`badge-${todayKey}`);
+  if (section) section.classList.add('is-today');
+  if (badge) badge.style.display = 'inline-block';
+
+  // 일정 조립 탭이 기본 탭이니, 로드 시 오늘 섹션으로 살짝 스크롤
+  setTimeout(() => {
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+})();
 </script>
 
 <script type="module">
@@ -485,7 +519,10 @@ renderExploreList();
         `;
         li.querySelector(`#sh-${id}`).addEventListener("change", (e) => updateDoc(doc(db, "packing_items_v3", id), { seunghyun: e.target.checked }));
         li.querySelector(`#sy-${id}`).addEventListener("change", (e) => updateDoc(doc(db, "packing_items_v3", id), { soyoung: e.target.checked }));
-        li.querySelector(".packing-delete").addEventListener("click", () => deleteDoc(doc(db, "packing_items_v3", id)));
+        li.querySelector(".packing-delete").addEventListener("click", () => {
+          if (!confirm(`"${data.text}"을(를) 목록에서 삭제할까요?`)) return;
+          deleteDoc(doc(db, "packing_items_v3", id));
+        });
         packListEl.appendChild(li);
     });
   });
@@ -528,7 +565,10 @@ renderExploreList();
   const scheduleRef = collection(db, "trip_schedule_v6");
   window.currentScheduleDocs = { d1: [], d2: [], d3: [], d4: [], d5: [] };
 
-  window.deleteItem = async function(docId) { await deleteDoc(doc(db, "trip_schedule_v6", docId)); };
+  window.deleteItem = async function(docId, placeName) {
+    if (!confirm(`"${placeName}"을(를) 일정에서 삭제할까요?`)) return;
+    await deleteDoc(doc(db, "trip_schedule_v6", docId));
+  };
   window.updateTime = async function(docId, newTime) { await updateDoc(doc(db, "trip_schedule_v6", docId), { time: newTime }); };
   window.moveItem = async function(day, index, direction) {
     const list = window.currentScheduleDocs[day];
@@ -596,7 +636,7 @@ renderExploreList();
               <div class="stop-controls">
                 <button class="btn-ctrl" onclick="window.moveItem('${day}', ${index}, -1)" ${upDisabled}>▲</button>
                 <button class="btn-ctrl" onclick="window.moveItem('${day}', ${index}, 1)" ${downDisabled}>▼</button>
-                <button class="btn-ctrl del" onclick="window.deleteItem('${item.id}')">✕</button>
+                <button class="btn-ctrl del" onclick="window.deleteItem('${item.id}', '${item.place.name.replace(/'/g, "\\'")}')">✕</button>
               </div>
             </div>
             <div class="name-wrap">
