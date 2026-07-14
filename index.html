@@ -53,15 +53,15 @@
   /* =========================================
      왼쪽 패널: 헤더 & 탭 메뉴
      ========================================= */
-  .inner-content { padding: 30px 22px 60px; }
+  .inner-content { padding: 18px 22px 60px; }
 
-  header { margin-bottom: 24px; }
+  header { margin-bottom: 16px; }
   .eyebrow { font-size: 13px; letter-spacing: 0.14em; color: var(--tangerine-deep); font-weight: 700; text-transform: uppercase; }
-  h1 { font-size: 32px; line-height: 1.15; margin: 8px 0 16px; font-weight: 800; letter-spacing: -0.01em; }
+  h1 { font-size: 28px; line-height: 1.1; margin: 4px 0 10px; font-weight: 800; letter-spacing: -0.01em; }
   
-  .quickcard { background: var(--pine); color: var(--sand); border-radius: 16px; padding: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .quickcard .item .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(245,239,225,0.55); margin-bottom: 3px; }
-  .quickcard .item .v { font-size: 14.5px; font-weight: 700; }
+  .quickcard { background: var(--pine); color: var(--sand); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .quickcard .item .k { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(245,239,225,0.55); margin-bottom: 2px; }
+  .quickcard .item .v { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
   .quickcard .item.full { grid-column: 1 / -1; }
 
   .viewswitch { display: flex; gap: 6px; background: var(--sand-deep); border-radius: 999px; padding: 4px; margin-bottom: 24px; position: sticky; top: 0; z-index: 20; }
@@ -194,12 +194,12 @@
         <div class="quickcard">
           <div class="item"><div class="k">기간</div><div class="v">8/3(월) — 8/7(금)</div></div>
           <div class="item"><div class="k">숙소</div><div class="v">서귀포 고정</div></div>
-          <div class="item full"><div class="k">스마트 조립 가이드</div><div class="v" style="font-size:13.5px; line-height:1.4;">'장소 탐색'에서 스위치를 켜면 지도에 핀이 표시됩니다. 핀을 눌러 일정표에 바로 꽂아 넣으세요!</div></div>
+          <div class="item full"><div class="k">이용 방법</div><div class="v" style="font-size:13.5px; line-height:1.5; font-weight: 600;">1. '장소 탐색' 탭에서 원하는 곳 스위치 켜기<br>2. 지도에 뜬 핀 탭하기<br>3. 날짜 선택 후 '추가' — 또는 네이버 지도 링크로 위치만 확인</div></div>
         </div>
       </header>
 
       <div class="viewswitch">
-        <button id="btn-schedule" class="active">일정 조립</button>
+        <button id="btn-schedule" class="active">일정</button>
         <button id="btn-explore">장소 탐색</button>
         <button id="btn-packing">준비물</button>
       </div>
@@ -444,7 +444,7 @@ document.getElementById('toggle-all-explore').addEventListener('change', (e) => 
 renderExploreList(); 
 
 // --- 오늘 날짜 자동 하이라이트 ---
-(function highlightToday() {
+(function setupInitialView() {
   const TRIP_DAYS = {
     d1: new Date(2026, 7, 3),  // 8/3
     d2: new Date(2026, 7, 4),  // 8/4
@@ -458,14 +458,20 @@ renderExploreList();
     return now.getFullYear() === d.getFullYear() && now.getMonth() === d.getMonth() && now.getDate() === d.getDate();
   });
 
-  if (!todayKey) return; // 여행 기간이 아니면 평소 상태 그대로
+  // 지도 기본값: 오늘이 여행 기간이면 그 날짜만, 아니면 1일차만 표시
+  const targetDay = todayKey || 'd1';
+  document.querySelectorAll('.m-chip.schedule-chip').forEach(chip => chip.classList.remove('on'));
+  const targetChip = document.querySelector(`.m-chip.schedule-chip[data-day="${targetDay}"]`);
+  if (targetChip) targetChip.classList.add('on');
+
+  if (!todayKey) return; // 여행 기간이 아니면 '오늘' 하이라이트는 표시하지 않음
 
   const section = document.getElementById(`sec-${todayKey}`);
   const badge = document.getElementById(`badge-${todayKey}`);
   if (section) section.classList.add('is-today');
   if (badge) badge.style.display = 'inline-block';
 
-  // 일정 조립 탭이 기본 탭이니, 로드 시 오늘 섹션으로 살짝 스크롤
+  // 일정 탭이 기본 탭이니, 로드 시 오늘 섹션으로 살짝 스크롤
   setTimeout(() => {
     if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 300);
