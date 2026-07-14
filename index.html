@@ -286,9 +286,9 @@
   <section class="day" id="d4">
     <div class="day-head">
       <div class="day-num">04</div>
-      <div class="day-meta"><div class="date">8/6 (목)</div><div class="title">서부 · 돌고래 · 알파카 · 금능</div></div>
+      <div class="day-meta"><div class="date">8/6 (목)</div><div class="title">서부 · 알파카 · 애월 · 금능 · 돌고래</div></div>
     </div>
-    <div class="day-tags"><span class="tag drive">편도 50분~1h</span><span class="tag swim">수영 있는 날</span><span class="tag easy">동물 체험</span><span class="tag easy">돌고래 스폿</span></div>
+    <div class="day-tags"><span class="tag drive">북→남 해안선 드라이브</span><span class="tag swim">수영 있는 날</span><span class="tag easy">동물 체험</span><span class="tag easy">돌고래 스폿</span></div>
     <div class="timeline">
       <div class="stop">
         <div class="time">08:00</div>
@@ -296,26 +296,26 @@
       </div>
       <div class="stop">
         <div class="time">오전</div>
-        <div class="name"><a href="https://map.naver.com/p/search/신도포구" target="_blank">신도포구</a></div>
-        <div class="note">해안도로 바로 앞 평지에서 야생 돌고래 감상. 걷는 거리가 거의 없어 발목 부담이 전혀 없습니다.</div>
-        <div class="badges"><span class="badge flat">평지</span><span class="badge water">돌고래 스폿</span></div>
-      </div>
-      <div class="stop">
-        <div class="time">낮</div>
-        <div class="name"><a href="https://naver.me/Fr7ptPUY" target="_blank">금능해수욕장</a> · 수영</div>
-        <div class="note">신도포구에서 해안도로를 따라 북쪽으로 20분 이동. 비교적 한적한 해변입니다.</div>
-        <div class="badges"><span class="badge water">수영</span></div>
-      </div>
-      <div class="stop">
-        <div class="time">오후</div>
         <div class="name"><a href="https://naver.me/xprAP83t" target="_blank">도치돌 알파카목장</a></div>
         <div class="note">넓은 초원이 평지라 걷기 편함. 알파카 먹이주기 체험.</div>
         <div class="badges"><span class="badge flat">평지 초원</span></div>
       </div>
       <div class="stop">
-        <div class="time">저녁</div>
+        <div class="time">점심</div>
         <div class="name"><a href="https://naver.me/I55awXy6" target="_blank">애월 카페거리</a></div>
-        <div class="note">오션뷰 카페 한 곳 골라 자리 잡고 노을 감상.</div>
+        <div class="note">오션뷰 카페 한 곳 골라 자리 잡고 바다 감상 및 점심 식사.</div>
+      </div>
+      <div class="stop">
+        <div class="time">오후</div>
+        <div class="name"><a href="https://naver.me/Fr7ptPUY" target="_blank">금능해수욕장</a> · 수영</div>
+        <div class="note">애월에서 남쪽으로 해안도로를 타고 내려오며 도착. 비교적 한적한 해변입니다.</div>
+        <div class="badges"><span class="badge water">수영</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">해질녘 (저녁)</div>
+        <div class="name"><a href="https://map.naver.com/p/search/신도포구" target="_blank">신도포구</a></div>
+        <div class="note">금능에서 더 남쪽으로 내려와 도착. 해 질 무렵 바다 노을과 함께 야생 돌고래를 감상하기 좋은 시간대입니다. 걷는 거리가 거의 없어 발목 부담이 전혀 없습니다.</div>
+        <div class="badges"><span class="badge flat">평지</span><span class="badge water">돌고래 스폿</span></div>
       </div>
       <div class="stop">
         <div class="time">밤</div>
@@ -444,12 +444,12 @@ btnFood.addEventListener('click', () => showView('food'));
 
 const BASE = { name: '서귀포 숙소', lat: 33.2448955, lng: 126.5644569 };
 
-// 데이터 업데이트 부분: d4 배열에 신도포구 좌표 삽입
+// 데이터 업데이트 부분: d4 배열의 좌표 방문 순서를 북쪽에서 남쪽으로 재배치
 const DAYS = {
   d1: { color: '#E37B34', label: '8/3 도착', stops: [{ name: '제주공항', lat: 33.5070772, lng: 126.4934311 }, BASE] },
   d2: { color: '#1C6E74', label: '8/4 숲·쇠소깍', stops: [BASE, { name: '샤이니숲길', lat: 33.4275002, lng: 126.6617022 }, { name: '쇠소깍', lat: 33.2523471, lng: 126.6238624 }, BASE] },
   d3: { color: '#2A6FA8', label: '8/5 동부', stops: [BASE, { name: '광치기해변', lat: 33.4370693, lng: 126.9275071 }, { name: '섭지코지', lat: 33.4242095, lng: 126.931111 }, { name: '김녕해수욕장', lat: 33.5582327, lng: 126.759787 }, BASE] },
-  d4: { color: '#5A7350', label: '8/6 서부', stops: [BASE, { name: '신도포구', lat: 33.2797, lng: 126.1763 }, { name: '금능해수욕장', lat: 33.3898565, lng: 126.235364 }, { name: '알파카목장', lat: 33.4099012, lng: 126.3667667 }, { name: '애월 카페거리', lat: 33.4623497, lng: 126.3103487 }, BASE] },
+  d4: { color: '#5A7350', label: '8/6 서부', stops: [BASE, { name: '알파카목장', lat: 33.4099012, lng: 126.3667667 }, { name: '애월 카페거리', lat: 33.4623497, lng: 126.3103487 }, { name: '금능해수욕장', lat: 33.3898565, lng: 126.235364 }, { name: '신도포구', lat: 33.2797, lng: 126.1763 }, BASE] },
   d5: { color: '#8B4B6B', label: '8/7 출국', stops: [BASE, { name: '이호테우해변', lat: 33.4979363, lng: 126.4531587 }, { name: '제주공항', lat: 33.5070772, lng: 126.4934311 }] }
 };
 
@@ -536,7 +536,7 @@ const foodData = [
   
   { name: "대문집", category: "해산물/향토", url: "https://map.naver.com/p/search/제주%20대문집", lat: 33.396, lng: 126.257, desc: "갈치조림과 전복뚝배기. 깔끔하고 정갈한 제주 향토음식." },
   { name: "한림수협 센터", category: "해산물/향토", url: "https://map.naver.com/p/search/한림수협다목적어업인지원센터", lat: 33.415, lng: 126.262, desc: "신선한 제철 횟감을 가성비 좋게 포장할 수 있는 회센터." },
-  { name: "쭈꾸쭈꾸쭈꾸미", 해산물/향토", url: "https://map.naver.com/p/search/제주%20쭈꾸쭈꾸쭈꾸미", lat: 33.488, lng: 126.495, desc: "매콤 중독성 양념 주꾸미 볶음. 남은 양념에 치즈 볶음밥." },
+  { name: "쭈꾸쭈꾸쭈꾸미", category: "해산물/향토", url: "https://map.naver.com/p/search/제주%20쭈꾸쭈꾸쭈꾸미", lat: 33.488, lng: 126.495, desc: "매콤 중독성 양념 주꾸미 볶음. 남은 양념에 치즈 볶음밥." },
   
   { name: "리보스코화덕피자", category: "양식/기타", url: "https://map.naver.com/p/search/제주%20리보스코화덕피자", lat: 33.486, lng: 126.481, desc: "해녀 채취 톳 도우 위에 감자튀김을 올린 한라산 피자 시그니처." }
 ];
