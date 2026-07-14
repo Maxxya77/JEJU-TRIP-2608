@@ -48,13 +48,12 @@
     opacity: 0.55; margin: 0 auto; max-width: 640px;
   }
 
-  /* 헤더 높이 다이어트 (패딩 축소) */
-  header { padding: 25px 22px 10px; max-width: 640px; margin: 0 auto; }
+  header { padding: 30px 22px 10px; max-width: 640px; margin: 0 auto; }
   .eyebrow { font-size: 13px; letter-spacing: 0.14em; color: var(--tangerine-deep); font-weight: 700; text-transform: uppercase; }
   h1 { font-size: 34px; line-height: 1.15; margin: 8px 0 4px; font-weight: 800; letter-spacing: -0.01em; }
-  .subtitle { font-size: 15px; color: rgba(35,36,31,0.62); margin-bottom: 10px; }
+  .subtitle { font-size: 15px; color: rgba(35,36,31,0.62); margin-bottom: 22px; }
 
-  .quickcard { background: var(--pine); color: var(--sand); border-radius: 18px; padding: 20px 20px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+  .quickcard { background: var(--pine); color: var(--sand); border-radius: 18px; padding: 20px 20px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; margin-bottom: 22px; }
   .quickcard .item .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(245,239,225,0.55); margin-bottom: 3px; }
   .quickcard .item .v { font-size: 15px; font-weight: 700; }
   .quickcard .item.full { grid-column: 1 / -1; }
@@ -112,15 +111,13 @@
   .food-sidebar { width: 45%; border-right: 1px solid var(--line); display: flex; flex-direction: column; background: #FAFAFA; }
   .food-filter { padding: 15px; border-bottom: 1px solid var(--line); background: white; }
   
-  /* 칩 가로 스크롤 적용 (공간 절약) */
-  .food-chips { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 6px; padding-bottom: 4px; }
-  .food-chips::-webkit-scrollbar { display: none; }
+  /* 소분류 칩 자동 줄바꿈 복원 (PC/모바일 모두 한눈에 보이게) */
+  .food-chips { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 4px; }
   .food-chips .chip {
-      flex: 0 0 auto; white-space: nowrap; /* 줄바꿈 방지 */
       font-size: 12px; font-weight: 700; padding: 6px 10px;
       border-radius: 999px; border: 1.5px solid var(--line);
       background: white; cursor: pointer; color: rgba(35,36,31,0.6);
-      transition: all 0.2s; user-select: none;
+      transition: all 0.2s; user-select: none; white-space: nowrap;
   }
   .food-chips .chip.on { background: var(--pine); color: var(--sand); border-color: var(--pine); }
 
@@ -144,9 +141,7 @@
   #foodmap { width: 100%; height: 100%; }
 
   @media (max-width: 600px) {
-      /* 모바일에서 대시보드가 화면 전체를 꽉 차게 쓰도록 높이 자동화 */
       .food-dashboard { flex-direction: column; height: calc(100vh - 150px); }
-      /* 리스트가 지도를 안 가리면서 최대한 길게 보이도록 비율 조정 (리스트 55% : 지도 45%) */
       .food-sidebar { width: 100%; height: 55%; border-right: none; border-bottom: 2px solid var(--line); }
       .food-map-container { width: 100%; height: 45%; }
   }
@@ -160,6 +155,17 @@
   <div class="eyebrow">Jeju · 8.3 — 8.7</div>
   <h1>제주 4박5일</h1>
   <div class="subtitle">서귀포 베이스 · 렌트카 · 커플 여행</div>
+
+  <!-- 자바스크립트로 숨기기 위해 ID(quickcard-container) 부여 -->
+  <div id="quickcard-container">
+    <div class="quickcard">
+      <div class="item"><div class="k">기간</div><div class="v">8/3(월) — 8/7(금)</div></div>
+      <div class="item"><div class="k">도착 / 반납</div><div class="v">18:00 도착 · 19:00 반납</div></div>
+      <div class="item"><div class="k">숙소</div><div class="v">서귀포 고정 (이동 없음)</div></div>
+      <div class="item"><div class="k">렌트카</div><div class="v">준중형 · 완전자차</div></div>
+      <div class="item full"><div class="k">유의사항</div><div class="v">발목 상태 고려 · 계단/장거리 보행 코스 최소화</div></div>
+    </div>
+  </div>
 </header>
 
 <div class="viewswitch">
@@ -169,17 +175,6 @@
 </div>
 
 <div id="view-schedule" class="active">
-  <!-- 요약 박스(Quickcard)를 일정 탭 안으로 옮겨서 다른 탭에서는 자동으로 숨겨지게 공간 확보 -->
-  <div style="padding: 0 22px 20px; max-width: 640px; margin: 0 auto;">
-    <div class="quickcard">
-      <div class="item"><div class="k">기간</div><div class="v">8/3(월) — 8/7(금)</div></div>
-      <div class="item"><div class="k">도착 / 반납</div><div class="v">18:00 도착 · 19:00 반납</div></div>
-      <div class="item"><div class="k">숙소</div><div class="v">서귀포 고정 (이동 없음)</div></div>
-      <div class="item"><div class="k">렌트카</div><div class="v">준중형 · 완전자차</div></div>
-      <div class="item full"><div class="k">유의사항</div><div class="v">발목 상태 고려 · 계단/장거리 보행 코스 최소화</div></div>
-    </div>
-  </div>
-
 <nav class="daynav">
   <div class="daynav-inner">
     <a href="#d1">8/3 도착</a>
@@ -385,7 +380,6 @@
     <div class="food-dashboard">
       <div class="food-sidebar">
         <div class="food-filter">
-          <!-- 모바일에서 줄바꿈 없이 가로 스크롤로 공간 확보됨 -->
           <div class="food-chips" id="category-chips">
             <span class="chip on" data-category="all">전체 보기</span>
             <span class="chip on" data-category="카페/디저트">카페/디저트</span>
@@ -394,7 +388,6 @@
             <span class="chip on" data-category="해산물/향토">해산물/향토음식</span>
             <span class="chip on" data-category="양식/기타">양식/기타</span>
           </div>
-          <!-- 공간 차지 줄인 마스터 제어 스위치 -->
           <div class="master-toggle-wrapper" style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; background: #F4F6F8; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line);">
             <span style="font-size: 13.5px; font-weight: 800; color: var(--pine);">현재 목록 지도에 모두 표시</span>
             <label class="switch">
@@ -416,6 +409,7 @@
 <footer>제주 4박5일 · 8.3 – 8.7</footer>
 
 <script>
+const quickcardContainer = document.getElementById('quickcard-container');
 const btnSchedule = document.getElementById('btn-schedule');
 const btnMap = document.getElementById('btn-map');
 const btnFood = document.getElementById('btn-food');
@@ -429,13 +423,20 @@ let map;
 let foodMap; 
 
 function showView(name) {
+  // 탭 버튼 활성화 변경
   btnSchedule.classList.toggle('active', name === 'schedule');
   btnMap.classList.toggle('active', name === 'map');
   btnFood.classList.toggle('active', name === 'food');
 
+  // 화면 내용 변경
   viewSchedule.classList.toggle('active', name === 'schedule');
   viewMap.classList.toggle('active', name === 'map');
   viewFood.classList.toggle('active', name === 'food');
+
+  // 핵심 수정: '일정' 탭일 때만 상단 요약 박스를 보여주고, 나머지는 자바스크립트로 강제 숨김 처리
+  if (quickcardContainer) {
+    quickcardContainer.style.display = (name === 'schedule') ? 'block' : 'none';
+  }
 
   if (name === 'map') {
     if (!mainMapInit) {
