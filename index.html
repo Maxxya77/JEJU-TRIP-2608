@@ -62,7 +62,6 @@
   .viewswitch button { flex: 1; border: none; background: transparent; padding: 9px 0; font-family: inherit; font-size: 14px; font-weight: 700; color: rgba(35,36,31,0.5); border-radius: 999px; cursor: pointer; }
   .viewswitch button.active { background: var(--pine); color: var(--sand); }
 
-  /* 모든 뷰는 기본적으로 숨기고 active 클래스가 있을 때만 보이게 설정 */
   #view-schedule, #view-map, #view-food { display: none; max-width: 800px; margin: 0 auto; }
   #view-schedule.active, #view-map.active, #view-food.active { display: block; }
 
@@ -106,16 +105,12 @@
 
   footer { text-align: center; font-size: 12px; color: rgba(35,36,31,0.4); padding: 30px 22px 40px; }
 
-  /* =========================================
-     맛집 대시보드 구조
-     ========================================= */
   .food-dashboard-wrapper { max-width: 900px; margin: 0 auto; padding: 0 10px 40px; }
   .food-dashboard { display: flex; flex-direction: row; height: 70vh; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--line); }
   
   .food-sidebar { width: 45%; border-right: 1px solid var(--line); display: flex; flex-direction: column; background: #FAFAFA; }
   .food-filter { padding: 15px; border-bottom: 1px solid var(--line); background: white; }
   
-  /* 다중 선택 칩 UI */
   .food-chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .food-chips .chip {
       font-size: 12px; font-weight: 700; padding: 6px 10px;
@@ -134,7 +129,6 @@
   .food-category { font-size: 11px; font-weight: 700; color: var(--teal); background: var(--teal-soft); padding: 2px 6px; border-radius: 4px; display: inline-block; }
   .food-desc { font-size: 12.5px; color: rgba(35,36,31,0.72); margin-top: 6px; line-height: 1.4; }
 
-  /* 토글 스위치 */
   .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
   .switch input { opacity: 0; width: 0; height: 0; }
   .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E0E0E0; transition: .3s; border-radius: 26px; }
@@ -176,9 +170,6 @@
   <button id="btn-food">맛집 (대시보드)</button>
 </div>
 
-<!-- =========================================
-     1. 일정 탭
-     ========================================= -->
 <div id="view-schedule" class="active">
 <nav class="daynav">
   <div class="daynav-inner">
@@ -291,13 +282,13 @@
   </section>
   <div class="dolgam"></div>
 
-  <!-- Day 4 -->
+  <!-- Day 4 (업데이트된 부분) -->
   <section class="day" id="d4">
     <div class="day-head">
       <div class="day-num">04</div>
-      <div class="day-meta"><div class="date">8/6 (목)</div><div class="title">서부 · 알파카 · 금능 수영</div></div>
+      <div class="day-meta"><div class="date">8/6 (목)</div><div class="title">서부 · 돌고래 · 알파카 · 금능</div></div>
     </div>
-    <div class="day-tags"><span class="tag drive">편도 50분~1h</span><span class="tag swim">수영 있는 날</span><span class="tag easy">동물 체험</span></div>
+    <div class="day-tags"><span class="tag drive">편도 50분~1h</span><span class="tag swim">수영 있는 날</span><span class="tag easy">동물 체험</span><span class="tag easy">돌고래 스폿</span></div>
     <div class="timeline">
       <div class="stop">
         <div class="time">08:00</div>
@@ -305,15 +296,21 @@
       </div>
       <div class="stop">
         <div class="time">오전</div>
-        <div class="name"><a href="https://naver.me/xprAP83t" target="_blank">도치돌 알파카목장</a></div>
-        <div class="note">넓은 초원이 평지라 걷기 편함. 알파카 먹이주기 체험.</div>
-        <div class="badges"><span class="badge flat">평지 초원</span></div>
+        <div class="name"><a href="https://map.naver.com/p/search/신도포구" target="_blank">신도포구</a></div>
+        <div class="note">해안도로 바로 앞 평지에서 야생 돌고래 감상. 걷는 거리가 거의 없어 발목 부담이 전혀 없습니다.</div>
+        <div class="badges"><span class="badge flat">평지</span><span class="badge water">돌고래 스폿</span></div>
       </div>
       <div class="stop">
         <div class="time">낮</div>
         <div class="name"><a href="https://naver.me/Fr7ptPUY" target="_blank">금능해수욕장</a> · 수영</div>
-        <div class="note">협재 바로 옆, 비교적 한적한 편.</div>
+        <div class="note">신도포구에서 해안도로를 따라 북쪽으로 20분 이동. 비교적 한적한 해변입니다.</div>
         <div class="badges"><span class="badge water">수영</span></div>
+      </div>
+      <div class="stop">
+        <div class="time">오후</div>
+        <div class="name"><a href="https://naver.me/xprAP83t" target="_blank">도치돌 알파카목장</a></div>
+        <div class="note">넓은 초원이 평지라 걷기 편함. 알파카 먹이주기 체험.</div>
+        <div class="badges"><span class="badge flat">평지 초원</span></div>
       </div>
       <div class="stop">
         <div class="time">저녁</div>
@@ -359,9 +356,6 @@
 </main>
 </div>
 
-<!-- =========================================
-     2. 전체 지도 탭 
-     ========================================= -->
 <div id="view-map">
   <div class="map-daychips">
     <span class="chip on" data-day="all">전체</span>
@@ -377,13 +371,9 @@
   <div class="map-legend">점선은 실제 도로 경로가 아니라 방문 순서를 이어준 직선이에요.<br>칩을 눌러 특정 날짜만 켜고 끌 수 있어요.</div>
 </div>
 
-<!-- =========================================
-     3. 맛집 탭
-     ========================================= -->
 <div id="view-food">
   <div class="food-dashboard-wrapper">
     <div class="food-dashboard">
-      <!-- 좌측 리스트 -->
       <div class="food-sidebar">
         <div class="food-filter">
           <div class="food-chips" id="category-chips">
@@ -396,10 +386,8 @@
           </div>
         </div>
         <div class="food-list-container" id="food-list">
-          <!-- 자바스크립트로 리스트 자동 생성 -->
         </div>
       </div>
-      <!-- 우측 지도 -->
       <div class="food-map-container">
         <div id="foodmap"></div>
       </div>
@@ -410,9 +398,6 @@
 <footer>제주 4박5일 · 8.3 – 8.7</footer>
 
 <script>
-// =========================================
-// 1. 뷰 스위처 로직 통합 (버그 수정: active 클래스 정상 작동)
-// =========================================
 const btnSchedule = document.getElementById('btn-schedule');
 const btnMap = document.getElementById('btn-map');
 const btnFood = document.getElementById('btn-food');
@@ -422,16 +407,14 @@ const viewFood = document.getElementById('view-food');
 
 let mainMapInit = false;
 let foodMapInit = false;
-let map; // 메인 지도
-let foodMap; // 맛집 지도
+let map; 
+let foodMap; 
 
 function showView(name) {
-  // 버튼 클래스 토글
   btnSchedule.classList.toggle('active', name === 'schedule');
   btnMap.classList.toggle('active', name === 'map');
   btnFood.classList.toggle('active', name === 'food');
 
-  // 핵심 수정 부분: 3개의 화면 모두 'active' 클래스 유무로 보이고 안 보이고를 결정함
   viewSchedule.classList.toggle('active', name === 'schedule');
   viewMap.classList.toggle('active', name === 'map');
   viewFood.classList.toggle('active', name === 'food');
@@ -459,16 +442,14 @@ btnSchedule.addEventListener('click', () => showView('schedule'));
 btnMap.addEventListener('click', () => showView('map'));
 btnFood.addEventListener('click', () => showView('food'));
 
-
-// =========================================
-// 2. 전체 지도 탭
-// =========================================
 const BASE = { name: '서귀포 숙소', lat: 33.2448955, lng: 126.5644569 };
+
+// 데이터 업데이트 부분: d4 배열에 신도포구 좌표 삽입
 const DAYS = {
   d1: { color: '#E37B34', label: '8/3 도착', stops: [{ name: '제주공항', lat: 33.5070772, lng: 126.4934311 }, BASE] },
   d2: { color: '#1C6E74', label: '8/4 숲·쇠소깍', stops: [BASE, { name: '샤이니숲길', lat: 33.4275002, lng: 126.6617022 }, { name: '쇠소깍', lat: 33.2523471, lng: 126.6238624 }, BASE] },
   d3: { color: '#2A6FA8', label: '8/5 동부', stops: [BASE, { name: '광치기해변', lat: 33.4370693, lng: 126.9275071 }, { name: '섭지코지', lat: 33.4242095, lng: 126.931111 }, { name: '김녕해수욕장', lat: 33.5582327, lng: 126.759787 }, BASE] },
-  d4: { color: '#5A7350', label: '8/6 서부', stops: [BASE, { name: '알파카목장', lat: 33.4099012, lng: 126.3667667 }, { name: '금능해수욕장', lat: 33.3898565, lng: 126.235364 }, { name: '애월 카페거리', lat: 33.4623497, lng: 126.3103487 }, BASE] },
+  d4: { color: '#5A7350', label: '8/6 서부', stops: [BASE, { name: '신도포구', lat: 33.2797, lng: 126.1763 }, { name: '금능해수욕장', lat: 33.3898565, lng: 126.235364 }, { name: '알파카목장', lat: 33.4099012, lng: 126.3667667 }, { name: '애월 카페거리', lat: 33.4623497, lng: 126.3103487 }, BASE] },
   d5: { color: '#8B4B6B', label: '8/7 출국', stops: [BASE, { name: '이호테우해변', lat: 33.4979363, lng: 126.4531587 }, { name: '제주공항', lat: 33.5070772, lng: 126.4934311 }] }
 };
 
@@ -529,10 +510,6 @@ mapChips.forEach(chip => {
   });
 });
 
-
-// =========================================
-// 3. 맛집 탭
-// =========================================
 const foodData = [
   { name: "베케", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20베케", lat: 33.255, lng: 126.586, desc: "이끼와 숲이 어우러진 생태 정원 카페. 차콩크림라떼 추천." },
   { name: "김녕떠오르길", category: "카페/디저트", url: "https://map.naver.com/p/search/제주%20김녕떠오르길", lat: 33.557, lng: 126.759, desc: "김녕 바닷길 인근 에메랄드빛 오션뷰 베이커리." },
@@ -559,7 +536,7 @@ const foodData = [
   
   { name: "대문집", category: "해산물/향토", url: "https://map.naver.com/p/search/제주%20대문집", lat: 33.396, lng: 126.257, desc: "갈치조림과 전복뚝배기. 깔끔하고 정갈한 제주 향토음식." },
   { name: "한림수협 센터", category: "해산물/향토", url: "https://map.naver.com/p/search/한림수협다목적어업인지원센터", lat: 33.415, lng: 126.262, desc: "신선한 제철 횟감을 가성비 좋게 포장할 수 있는 회센터." },
-  { name: "쭈꾸쭈꾸쭈꾸미", category: "해산물/향토", url: "https://map.naver.com/p/search/제주%20쭈꾸쭈꾸쭈꾸미", lat: 33.488, lng: 126.495, desc: "매콤 중독성 양념 주꾸미 볶음. 남은 양념에 치즈 볶음밥." },
+  { name: "쭈꾸쭈꾸쭈꾸미", 해산물/향토", url: "https://map.naver.com/p/search/제주%20쭈꾸쭈꾸쭈꾸미", lat: 33.488, lng: 126.495, desc: "매콤 중독성 양념 주꾸미 볶음. 남은 양념에 치즈 볶음밥." },
   
   { name: "리보스코화덕피자", category: "양식/기타", url: "https://map.naver.com/p/search/제주%20리보스코화덕피자", lat: 33.486, lng: 126.481, desc: "해녀 채취 톳 도우 위에 감자튀김을 올린 한라산 피자 시그니처." }
 ];
@@ -642,7 +619,6 @@ function renderFoodList() {
   });
 }
 
-// 화면이 처음 열릴 때 기본 화면을 '일정' 탭으로 세팅하여 바로 보이게 합니다.
 showView('schedule');
 </script>
 
