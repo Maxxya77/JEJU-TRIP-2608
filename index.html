@@ -48,10 +48,11 @@
     opacity: 0.55; margin: 0 auto; max-width: 640px;
   }
 
-  header { padding: 40px 22px 26px; max-width: 640px; margin: 0 auto; }
+  /* 헤더 높이 다이어트 (패딩 축소) */
+  header { padding: 25px 22px 10px; max-width: 640px; margin: 0 auto; }
   .eyebrow { font-size: 13px; letter-spacing: 0.14em; color: var(--tangerine-deep); font-weight: 700; text-transform: uppercase; }
   h1 { font-size: 34px; line-height: 1.15; margin: 8px 0 4px; font-weight: 800; letter-spacing: -0.01em; }
-  .subtitle { font-size: 15px; color: rgba(35,36,31,0.62); margin-bottom: 22px; }
+  .subtitle { font-size: 15px; color: rgba(35,36,31,0.62); margin-bottom: 10px; }
 
   .quickcard { background: var(--pine); color: var(--sand); border-radius: 18px; padding: 20px 20px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
   .quickcard .item .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(245,239,225,0.55); margin-bottom: 3px; }
@@ -71,7 +72,7 @@
   .stop .time { font-size: 12px; font-weight: 700; color: var(--tangerine-deep); }
   .stop .name { font-size: 16.5px; font-weight: 800; margin: 4px 0; }
 
-  #jejumap { width: 100%; height: 60vh; border-radius: 12px; margin-bottom: 12px; }
+  #jejumap { width: 100%; height: 70vh; border-radius: 12px; margin-bottom: 12px; }
   .map-daychips { display: flex; justify-content: center; gap: 6px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none; max-width: 640px; margin: 0 auto; }
   .map-daychips::-webkit-scrollbar{ display:none; }
   .map-daychips .chip { flex: 0 0 auto; font-size: 12.5px; font-weight: 700; padding: 7px 12px; border-radius: 999px; border: 1.5px solid var(--line); background: white; cursor: pointer; white-space: nowrap; opacity: 0.45; }
@@ -106,13 +107,16 @@
   footer { text-align: center; font-size: 12px; color: rgba(35,36,31,0.4); padding: 30px 22px 40px; }
 
   .food-dashboard-wrapper { max-width: 900px; margin: 0 auto; padding: 0 10px 40px; }
-  .food-dashboard { display: flex; flex-direction: row; height: 70vh; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--line); }
+  .food-dashboard { display: flex; flex-direction: row; height: 75vh; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--line); }
   
   .food-sidebar { width: 45%; border-right: 1px solid var(--line); display: flex; flex-direction: column; background: #FAFAFA; }
   .food-filter { padding: 15px; border-bottom: 1px solid var(--line); background: white; }
   
-  .food-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  /* 칩 가로 스크롤 적용 (공간 절약) */
+  .food-chips { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 6px; padding-bottom: 4px; }
+  .food-chips::-webkit-scrollbar { display: none; }
   .food-chips .chip {
+      flex: 0 0 auto; white-space: nowrap; /* 줄바꿈 방지 */
       font-size: 12px; font-weight: 700; padding: 6px 10px;
       border-radius: 999px; border: 1.5px solid var(--line);
       background: white; cursor: pointer; color: rgba(35,36,31,0.6);
@@ -140,9 +144,11 @@
   #foodmap { width: 100%; height: 100%; }
 
   @media (max-width: 600px) {
-      .food-dashboard { flex-direction: column; height: 85vh; }
-      .food-sidebar { width: 100%; height: 50%; border-right: none; border-bottom: 2px solid var(--line); }
-      .food-map-container { width: 100%; height: 50%; }
+      /* 모바일에서 대시보드가 화면 전체를 꽉 차게 쓰도록 높이 자동화 */
+      .food-dashboard { flex-direction: column; height: calc(100vh - 150px); }
+      /* 리스트가 지도를 안 가리면서 최대한 길게 보이도록 비율 조정 (리스트 55% : 지도 45%) */
+      .food-sidebar { width: 100%; height: 55%; border-right: none; border-bottom: 2px solid var(--line); }
+      .food-map-container { width: 100%; height: 45%; }
   }
 </style>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -154,14 +160,6 @@
   <div class="eyebrow">Jeju · 8.3 — 8.7</div>
   <h1>제주 4박5일</h1>
   <div class="subtitle">서귀포 베이스 · 렌트카 · 커플 여행</div>
-
-  <div class="quickcard">
-    <div class="item"><div class="k">기간</div><div class="v">8/3(월) — 8/7(금)</div></div>
-    <div class="item"><div class="k">도착 / 반납</div><div class="v">18:00 도착 · 19:00 반납</div></div>
-    <div class="item"><div class="k">숙소</div><div class="v">서귀포 고정 (이동 없음)</div></div>
-    <div class="item"><div class="k">렌트카</div><div class="v">준중형 · 완전자차</div></div>
-    <div class="item full"><div class="k">유의사항</div><div class="v">발목 상태 고려 · 계단/장거리 보행 코스 최소화</div></div>
-  </div>
 </header>
 
 <div class="viewswitch">
@@ -171,6 +169,17 @@
 </div>
 
 <div id="view-schedule" class="active">
+  <!-- 요약 박스(Quickcard)를 일정 탭 안으로 옮겨서 다른 탭에서는 자동으로 숨겨지게 공간 확보 -->
+  <div style="padding: 0 22px 20px; max-width: 640px; margin: 0 auto;">
+    <div class="quickcard">
+      <div class="item"><div class="k">기간</div><div class="v">8/3(월) — 8/7(금)</div></div>
+      <div class="item"><div class="k">도착 / 반납</div><div class="v">18:00 도착 · 19:00 반납</div></div>
+      <div class="item"><div class="k">숙소</div><div class="v">서귀포 고정 (이동 없음)</div></div>
+      <div class="item"><div class="k">렌트카</div><div class="v">준중형 · 완전자차</div></div>
+      <div class="item full"><div class="k">유의사항</div><div class="v">발목 상태 고려 · 계단/장거리 보행 코스 최소화</div></div>
+    </div>
+  </div>
+
 <nav class="daynav">
   <div class="daynav-inner">
     <a href="#d1">8/3 도착</a>
@@ -376,6 +385,7 @@
     <div class="food-dashboard">
       <div class="food-sidebar">
         <div class="food-filter">
+          <!-- 모바일에서 줄바꿈 없이 가로 스크롤로 공간 확보됨 -->
           <div class="food-chips" id="category-chips">
             <span class="chip on" data-category="all">전체 보기</span>
             <span class="chip on" data-category="카페/디저트">카페/디저트</span>
@@ -384,8 +394,8 @@
             <span class="chip on" data-category="해산물/향토">해산물/향토음식</span>
             <span class="chip on" data-category="양식/기타">양식/기타</span>
           </div>
-          <!-- 전체/소분류 통합 마스터 제어 스위치 추가 -->
-          <div class="master-toggle-wrapper" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; background: #F4F6F8; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--line);">
+          <!-- 공간 차지 줄인 마스터 제어 스위치 -->
+          <div class="master-toggle-wrapper" style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; background: #F4F6F8; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line);">
             <span style="font-size: 13.5px; font-weight: 800; color: var(--pine);">현재 목록 지도에 모두 표시</span>
             <label class="switch">
               <input type="checkbox" id="toggle-all-food">
@@ -587,15 +597,12 @@ function initFoodDashboard() {
     });
   });
 
-  // 전체 제어(마스터 토글) 버튼 클릭 이벤트
   document.getElementById('toggle-all-food').addEventListener('change', (e) => {
     const isChecked = e.target.checked;
     
-    // 현재 화면에 렌더링된 모든 맛집 스위치를 찾아서 상태를 일괄 적용
     document.querySelectorAll('.toggle-map-btn').forEach(btn => {
       if (btn.checked !== isChecked) {
         btn.checked = isChecked;
-        // 개별 스위치의 change 이벤트를 강제로 실행하여 지도에 마커를 추가/제거
         btn.dispatchEvent(new Event('change'));
       }
     });
@@ -651,12 +658,10 @@ function renderFoodList() {
           delete activeMarkers[name];
         }
       }
-      // 개별 버튼을 누를 때마다 마스터 버튼 상태 업데이트
       updateMasterFoodToggle();
     });
   });
 
-  // 카테고리를 눌러서 화면이 새로 그려질 때, 마스터 버튼 상태 동기화
   updateMasterFoodToggle();
 }
 
@@ -666,13 +671,11 @@ function updateMasterFoodToggle() {
   
   if (!masterToggle) return;
   
-  // 리스트에 보여지는 맛집이 아예 없으면 마스터 버튼을 끕니다.
   if (visibleToggles.length === 0) {
     masterToggle.checked = false;
     return;
   }
   
-  // 현재 화면에 있는 모든 개별 스위치가 켜져 있는지 확인
   const allChecked = visibleToggles.every(btn => btn.checked);
   masterToggle.checked = allChecked;
 }
