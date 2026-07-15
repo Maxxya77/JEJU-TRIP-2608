@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제주 4박5일 · 승현 & 소영</title>
+<style>
+  @font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
+    font-weight: 45 920;
+  }
+
+  :root {
+    --sand: #F5EFE1;
+    --sand-deep: #ECE2CC;
+    --ink: #23241F;
+    --pine: #16261F;
+    --tangerine: #E37B34;
+    --tangerine-deep: #C4611F;
+    --teal: #1C6E74;
+    --teal-soft: #DCEEEC;
+    --moss: #5A7350;
+    --line: rgba(35,36,31,0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--sand);
+    color: var(--ink);
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    height: 100vh;
+    overflow: hidden; 
+  }
+
+  /* =========================================
+     레이아웃: 좌우 분할 (PC) / 상하 분할 (모바일)
+     ========================================= */
+  .dashboard-layout { display: flex; height: 100vh; width: 100vw; }
+
+  .panel-left {
+    width: 45%; max-width: 600px; height: 100%; overflow-y: auto;
+    background: var(--sand); position: relative; z-index: 10;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.05);
+  }
+
+  .panel-right { flex: 1; position: relative; background: #e5e3df; }
+  #jejumap { width: 100%; height: 100%; }
+
+  /* =========================================
+     왼쪽 패널: 헤더 & 탭 메뉴
+     ========================================= */
+  .inner-content { padding: 18px 22px 60px; }
+
+  header { margin-bottom: 16px; }
+  .eyebrow { font-size: 13px; letter-spacing: 0.14em; color: var(--tangerine-deep); font-weight: 700; text-transform: uppercase; }
+  h1 { font-size: 28px; line-height: 1.1; margin: 4px 0 10px; font-weight: 800; letter-spacing: -0.01em; }
+  
+  .quickcard { background: var(--pine); color: var(--sand); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .quickcard .item .k { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(245,239,225,0.55); margin-bottom: 2px; }
+  .quickcard .item .v { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
+  .quickcard .item.full { grid-column: 1 / -1; }
+
+  .viewswitch { display: flex; gap: 6px; background: var(--sand-deep); border-radius: 999px; padding: 4px; margin-bottom: 24px; position: sticky; top: 0; z-index: 20; }
+  .viewswitch button { flex: 1; border: none; background: transparent; padding: 10px 0; font-family: inherit; font-size: 14px; font-weight: 700; color: rgba(35,36,31,0.5); border-radius: 999px; cursor: pointer; transition: all 0.2s; }
+  .viewswitch button.active { background: var(--pine); color: var(--sand); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* =========================================
+     1. 일정 조립 탭
+     ========================================= */
+  .day-section { margin-bottom: 40px; }
+  .day-section.is-today .day-head { border-bottom-color: var(--tangerine); }
+  .day-section.is-today .day-num { position: relative; }
+  .today-badge {
+    font-size: 11px; font-weight: 800; color: white; background: var(--tangerine);
+    padding: 3px 9px; border-radius: 999px; margin-left: 4px; vertical-align: middle;
+  }
+  .day-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; border-bottom: 2px solid var(--line); padding-bottom: 8px; }
+  .day-num { font-size: 28px; font-weight: 800; color: var(--tangerine); line-height: 1; letter-spacing: -0.02em; }
+  .day-title { font-size: 17px; font-weight: 800; }
+
+  .timeline { padding-left: 20px; border-left: 2px solid var(--sand-deep); margin-left: 10px; }
+  .stop { position: relative; padding-bottom: 22px; transition: opacity 0.3s; }
+  .stop::before { content: ''; position: absolute; left: -27px; top: 12px; width: 12px; height: 12px; border-radius: 50%; background: var(--tangerine); border: 2.5px solid var(--sand); }
+  
+  .stop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .time-input { width: 90px; padding: 6px 8px; border: 1.5px dashed rgba(196, 97, 31, 0.4); border-radius: 6px; font-family: inherit; font-size: 13.5px; font-weight: 800; color: var(--tangerine-deep); text-align: center; background: #fff; outline: none; transition: all 0.2s; }
+  .time-input:focus { border-color: var(--tangerine-deep); background: #FFF9F5; border-style: solid; }
+  .time-input::placeholder { color: rgba(196, 97, 31, 0.3); font-weight: 600; }
+
+  .stop-controls { display: flex; gap: 4px; }
+  .btn-ctrl { background: white; border: 1px solid var(--line); border-radius: 6px; width: 34px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); font-size: 12px; font-weight: 800; transition: background 0.2s; }
+  .btn-ctrl.del { color: #E35E34; font-size: 14px; }
+  .btn-ctrl:active { background: #f0f0f0; transform: scale(0.95); }
+  
+  .stop .name-wrap { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .stop .name { font-size: 16px; font-weight: 800; }
+  .stop .category { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+  .stop .note { font-size: 13px; line-height: 1.4; color: rgba(35,36,31,0.72); }
+
+  /* =========================================
+     2. 장소 탐색 탭
+     ========================================= */
+  .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .filter-chips .chip { font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px; border: 1.5px solid var(--line); background: white; cursor: pointer; color: rgba(35,36,31,0.6); transition: all 0.2s; user-select: none; }
+  
+  /* 소분류 컬러 매핑 */
+  .filter-chips .chip[data-category="all"].on { background: var(--pine); border-color: var(--pine); color: white; }
+  .filter-chips .chip[data-category="명소/여행지"].on { background: #25939A; border-color: #25939A; color: white; }
+  .filter-chips .chip[data-category="카페/디저트"].on { background: #F0A500; border-color: #F0A500; color: white; }
+  .filter-chips .chip[data-category="고기 (흑돼지/소고기)"].on { background: #E34A33; border-color: #E34A33; color: white; }
+  .filter-chips .chip[data-category="국/찌개 (해장국)"].on { background: #8E6DAE; border-color: #8E6DAE; color: white; }
+  .filter-chips .chip[data-category="해산물/향토음식"].on { background: #3D8CDA; border-color: #3D8CDA; color: white; }
+  .filter-chips .chip[data-category="양식/기타"].on { background: #759668; border-color: #759668; color: white; }
+
+  .master-toggle-wrapper { display: flex; justify-content: space-between; align-items: center; background: #FAFAFA; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 16px; }
+  .master-toggle-text { font-size: 14px; font-weight: 800; color: var(--ink); }
+
+  .place-card { display: flex; justify-content: space-between; align-items: center; background: white; border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: background 0.2s; }
+  .place-card:hover { background: #F4F6F8; }
+  .place-card .info { flex: 1; padding-right: 15px; }
+  .place-card .name-wrap { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .place-card .name { font-size: 16px; font-weight: 800; color: var(--ink); }
+  .place-card .category { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+  .place-card .desc { font-size: 13px; color: rgba(35,36,31,0.72); line-height: 1.4; margin: 0; }
+
+  .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E0E0E0; transition: .3s; border-radius: 26px; }
+  .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  input:checked + .slider { background-color: var(--tangerine); }
+  input:checked + .slider:before { transform: translateX(22px); }
+
+  /* =========================================
+     3. 준비물 탭
+     ========================================= */
+  .packing-input-group { display: flex; gap: 8px; margin-bottom: 20px; }
+  .packing-input-group input { flex: 1; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--line); font-size: 14.5px; font-family: inherit; }
+  .packing-input-group input:focus { outline: none; border-color: var(--pine); }
+  .packing-input-group button { padding: 0 20px; background: var(--tangerine); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 14.5px; cursor: pointer; }
+  
+  .packing-list { list-style: none; padding: 0; margin: 0; background: white; border-radius: 16px; border: 1px solid var(--line); overflow: hidden; }
+  .packing-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--line); }
+  .packing-item:last-child { border-bottom: none; }
+  .packing-text { flex: 1; font-size: 15.5px; font-weight: 600; color: var(--ink); transition: color 0.2s; padding-right: 10px; }
+  .packing-item.done .packing-text { color: rgba(35,36,31,0.4); text-decoration: line-through; }
+  
+  .user-checks { display: flex; gap: 12px; align-items: center; }
+  .user-check-label { font-size: 12.5px; font-weight: 800; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #3482E3; }
+  .user-check-label.soyoung { color: #E35E34; }
+  .user-check-label input { cursor: pointer; width: 16px; height: 16px; accent-color: var(--pine); }
+  .packing-delete { background: transparent; border: none; font-size: 18px; color: rgba(35,36,31,0.3); cursor: pointer; padding: 4px; margin-left: 5px; }
+
+  /* =========================================
+     지도 위 오버레이 칩 및 팝업
+     ========================================= */
+  .map-overlay-controls { position: absolute; top: 15px; left: 15px; right: 15px; z-index: 1000; display: flex; gap: 6px; flex-wrap: wrap; }
+  .m-chip { background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: 1.5px solid var(--line); border-radius: 999px; padding: 7px 12px; font-size: 12.5px; font-weight: 800; color: rgba(35,36,31,0.5); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.2s; }
+  .m-chip.on { background: var(--pine); color: white; border-color: var(--pine); }
+
+  .popup-content { text-align: center; min-width: 170px; font-family: 'Pretendard', sans-serif; }
+  .popup-title { font-size: 16px; font-weight: 800; margin: 0 0 4px 0; color: var(--ink); }
+  .popup-cat { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 12px; }
+  .popup-controls { display: flex; gap: 6px; }
+  .popup-select { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; outline: none; }
+  .popup-btn { background: var(--tangerine); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer; }
+  .popup-naver-link { display: block; margin-top: 8px; font-size: 12.5px; font-weight: 700; color: var(--teal); text-decoration: none; border-bottom: 1.5px dashed var(--teal); }
+
+  @media (max-width: 800px) {
+    .dashboard-layout { flex-direction: column; }
+    .panel-right { order: -1; flex: 0 0 auto; height: 38vh; position: relative; z-index: 5; border-bottom: 2px solid var(--line); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .panel-left { width: 100%; max-width: 100%; flex: 1 1 auto; height: auto; overflow-y: auto; box-shadow: none; z-index: 10; }
+    .inner-content { padding: 20px 16px 60px; }
+  }
+</style>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=4955b7601b5308d5f68f0b45c264ca8f&libraries=services"></script>
+</head>
+<body>
+
+<div class="dashboard-layout">
+  
+  <div class="panel-left">
+    <div class="inner-content">
+      <header>
+        <div class="eyebrow">Jeju · 8.3 — 8.7</div>
+        <h1>제주 4박5일</h1>
+        <div class="quickcard">
+          <div class="item"><div class="k">기간</div><div class="v">8/3(월) — 8/7(금)</div></div>
+          <div class="item"><div class="k">숙소</div><div class="v">서귀포 고정</div></div>
+          <div class="item full"><div class="k">이용 방법</div><div class="v" style="font-size:13.5px; line-height:1.5; font-weight: 600;">1. '장소 탐색' 탭에서 원하는 곳 스위치 켜기<br>2. 지도에 뜬 핀 탭하기<br>3. 날짜 선택 후 '추가' — 또는 네이버 지도 링크로 위치만 확인</div></div>
+        </div>
+      </header>
+
+      <div class="viewswitch">
+        <button id="btn-schedule" class="active">일정</button>
+        <button id="btn-explore">장소 탐색</button>
+        <button id="btn-packing">준비물</button>
+      </div>
+
+      <div id="view-schedule" class="tab-content active">
+        <div class="day-section" id="sec-d1">
+          <div class="day-head"><div class="day-num">01</div><div class="day-title">8/3 (월) · 도착 및 이동<span class="today-badge" id="badge-d1" style="display:none;">오늘</span></div></div>
+          <div class="timeline" id="timeline-d1"><div style="color:#888; font-size:13px;">불러오는 중...</div></div>
+        </div>
+        <div class="day-section" id="sec-d2">
+          <div class="day-head"><div class="day-num">02</div><div class="day-title">8/4 (화) · 자연과 힐링<span class="today-badge" id="badge-d2" style="display:none;">오늘</span></div></div>
+          <div class="timeline" id="timeline-d2"></div>
+        </div>
+        <div class="day-section" id="sec-d3">
+          <div class="day-head"><div class="day-num">03</div><div class="day-title">8/5 (수) · 동부 바다<span class="today-badge" id="badge-d3" style="display:none;">오늘</span></div></div>
+          <div class="timeline" id="timeline-d3"></div>
+        </div>
+        <div class="day-section" id="sec-d4">
+          <div class="day-head"><div class="day-num">04</div><div class="day-title">8/6 (목) · 서부 탐방<span class="today-badge" id="badge-d4" style="display:none;">오늘</span></div></div>
+          <div class="timeline" id="timeline-d4"></div>
+        </div>
+        <div class="day-section" id="sec-d5">
+          <div class="day-head"><div class="day-num">05</div><div class="day-title">8/7 (금) · 마무리 및 출국<span class="today-badge" id="badge-d5" style="display:none;">오늘</span></div></div>
+          <div class="timeline" id="timeline-d5"></div>
+        </div>
+      </div>
+
+      <div id="view-explore" class="tab-content">
+        <div class="filter-chips" id="category-chips">
+          <span class="chip on" data-category="all">전체 보기</span>
+          <span class="chip" data-category="명소/여행지">명소/여행지</span>
+          <span class="chip" data-category="카페/디저트">카페/디저트</span>
+          <span class="chip" data-category="고기 (흑돼지/소고기)">고기 (흑돼지/소고기)</span>
+          <span class="chip" data-category="국/찌개 (해장국)">국/찌개 (해장국)</span>
+          <span class="chip" data-category="해산물/향토음식">해산물/향토음식</span>
+          <span class="chip" data-category="양식/기타">양식/기타</span>
+        </div>
+        
+        <div class="master-toggle-wrapper">
+          <span class="master-toggle-text">현재 목록 지도에 모두 표시</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-all-explore">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div id="explore-wrapper"></div>
+      </div>
+
+      <div id="view-packing" class="tab-content">
+        <div class="packing-input-group">
+          <input type="text" id="packing-input" placeholder="추가할 물품 입력">
+          <button id="btn-add-packing">추가</button>
+        </div>
+        <ul id="packing-list-ul" class="packing-list">
+          <div style="padding: 20px; text-align: center; color: rgba(35,36,31,0.4); font-size: 13px;">불러오는 중...</div>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <div id="jejumap"></div>
+    <div class="map-overlay-controls">
+      <span class="m-chip on schedule-chip" data-day="all">전체 일정</span>
+      <span class="m-chip on schedule-chip" data-day="d1">1일</span>
+      <span class="m-chip on schedule-chip" data-day="d2">2일</span>
+      <span class="m-chip on schedule-chip" data-day="d3">3일</span>
+      <span class="m-chip on schedule-chip" data-day="d4">4일</span>
+      <span class="m-chip on schedule-chip" data-day="d5">5일</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// --- 데이터 베이스 (사용자 요청 리스트 100% 반영) ---
+const ALL_PLACES = {
+  // 명소/여행지 (기존 13개)
+  "p_airport": { name: "제주공항", category: "명소/여행지", lat: 33.5070, lng: 126.4934, desc: "도착 및 렌트카 픽업", url: "https://map.naver.com/p/search/제주공항" },
+  "p_base": { name: "서귀포 숙소", category: "명소/여행지", lat: 33.2448, lng: 126.5644, desc: "우리들의 베이스캠프" },
+  "p_olle": { name: "매일올레시장", category: "명소/여행지", lat: 33.2497, lng: 126.564, desc: "저녁 식사 및 야식 거리", url: "https://naver.me/FgHDJag6" },
+  "p_shiny": { name: "샤이니숲길", category: "명소/여행지", lat: 33.4275, lng: 126.6617, desc: "왕복 5~10분 숲길 포토존", url: "https://naver.me/x8tpDECV" },
+  "p_soesokkak": { name: "쇠소깍", category: "명소/여행지", lat: 33.2523, lng: 126.6238, desc: "투명카약 또는 테우 체험", url: "https://naver.me/F42M0Dvw" },
+  "p_gwangchigi": { name: "광치기해변", category: "명소/여행지", lat: 33.4370, lng: 126.9275, desc: "성산일출봉을 배경 뷰 포인트", url: "https://naver.me/FtThG0s5" },
+  "p_seopji": { name: "섭지코지", category: "명소/여행지", lat: 33.4242, lng: 126.9311, desc: "가볍게 걷기 좋은 해안 절경", url: "https://naver.me/xoH8AY7q" },
+  "p_gimnyeong": { name: "김녕해수욕장", category: "명소/여행지", lat: 33.5582, lng: 126.7597, desc: "에메랄드빛 바다 수영 스폿", url: "https://naver.me/GctrVhXR" },
+  "p_alpaca": { name: "도치돌 알파카목장", category: "명소/여행지", lat: 33.4099, lng: 126.3667, desc: "초원 평지, 먹이주기 체험", url: "https://naver.me/xprAP83t" },
+  "p_aewol": { name: "애월 카페거리", category: "명소/여행지", lat: 33.4623, lng: 126.3103, desc: "오션뷰 카페 및 산책", url: "https://naver.me/I55awXy6" },
+  "p_geumneung": { name: "금능해수욕장", category: "명소/여행지", lat: 33.3898, lng: 126.2353, desc: "비교적 한적한 수영 명소", url: "https://naver.me/Fr7ptPUY" },
+  "p_sindo": { name: "신도포구", category: "명소/여행지", lat: 33.2797, lng: 126.1763, desc: "노을과 야생 돌고래 감상", url: "https://map.naver.com/p/search/신도포구" },
+  "p_ihoteu": { name: "이호테우해변", category: "명소/여행지", lat: 33.4979, lng: 126.4531, desc: "공항 가기 전 말등대 포토존", url: "https://naver.me/FxFtVyc6" },
+  
+  // 맛집/카페 (사용자 제공 24개 완벽 복원)
+  "f_beke": { name: "베케", category: "카페/디저트", lat: 33.255, lng: 126.586, desc: "이끼와 숲이 어우러진 생태 정원 카페. 차콩크림라떼 추천.", url: "https://map.naver.com/p/search/제주%20베케" },
+  "f_gimnyeong_bread": { name: "김녕떠오르길", category: "카페/디저트", lat: 33.557, lng: 126.759, desc: "김녕 바닷길 인근 에메랄드빛 오션뷰 베이커리.", url: "https://map.naver.com/p/search/제주%20김녕떠오르길" },
+  "f_delmundo": { name: "델문도", category: "카페/디저트", lat: 33.543, lng: 126.668, desc: "함덕 해수욕장 바다 위에 떠 있는 듯한 대형 오션뷰 카페.", url: "https://map.naver.com/p/search/제주%20함덕%20델문도" },
+  "f_ara": { name: "아라찐빵", category: "카페/디저트", lat: 33.492, lng: 126.544, desc: "유튜브 핑계고 극찬. 부드러운 단일메뉴 팥찐빵.", url: "https://map.naver.com/p/search/제주%20아라찐빵" },
+  "f_glenco": { name: "카페 글렌코", category: "카페/디저트", lat: 33.435, lng: 126.772, desc: "스코틀랜드 초원 모티브의 대형 정원 카페. 수국/핑크뮬리.", url: "https://map.naver.com/p/search/제주%20카페글렌코" },
+  "f_scenic": { name: "카페씨닉", category: "카페/디저트", lat: 33.555, lng: 126.795, desc: "월정리 해변 정면 탁 트인 오션뷰 디저트 카페.", url: "https://map.naver.com/p/search/제주%20카페씨닉" },
+  "f_harakeke": { name: "하라케케", category: "카페/디저트", lat: 33.238, lng: 126.536, desc: "야외 수영장 및 리조트 분위기. 식사 대용 메뉴도 있음.", url: "https://map.naver.com/p/search/서귀포%20하라케케" },
+  "f_monocle": { name: "모노클제주", category: "카페/디저트", lat: 33.275, lng: 126.657, desc: "감귤 창고 개조. 붉은 벽돌 빈티지 감성 및 콜드브루.", url: "https://map.naver.com/p/search/제주%20모노클제주" },
+  "f_saturday": { name: "세러데이아일랜드", category: "카페/디저트", lat: 33.277, lng: 126.702, desc: "남원읍 시칠리아 감성. 부라타치즈 크루아상(부라타빠쬬).", url: "https://map.naver.com/p/search/제주%20세러데이아일랜드%20카페" },
+  "f_damso": { name: "카페 담소요", category: "카페/디저트", lat: 33.308, lng: 126.627, desc: "한라산 배경 한적한 정원형 브런치 카페. 밀크티 추천.", url: "https://map.naver.com/p/search/제주%20카페담소요" },
+  "f_bean": { name: "빈투지", category: "카페/디저트", lat: 33.516, lng: 126.528, desc: "제주시 건입동 조용하고 차분한 분위기의 스페셜티 로스터리.", url: "https://map.naver.com/p/search/제주%20빈투지" },
+  "f_osulloc": { name: "오설록 티 뮤지엄", category: "카페/디저트", lat: 33.305, lng: 126.289, desc: "제주 대표 녹차 밭과 박물관. 녹차 롤케이크 필수.", url: "https://map.naver.com/p/search/제주%20오설록%20티%20뮤지엄" },
+  
+  "f_byeoldon": { name: "별돈별 중문 본점", category: "고기 (흑돼지/소고기)", lat: 33.257, lng: 126.441, desc: "귤밭/야자수 이국적 뷰. 와인과 즐기는 프리미엄 흑돼지.", url: "https://map.naver.com/p/search/별돈별%20중문" },
+  "f_sangrok": { name: "상록식당", category: "고기 (흑돼지/소고기)", lat: 33.267, lng: 126.583, desc: "매콤달달 양념 삼겹살 연탄구이 노포 식당.", url: "https://map.naver.com/p/search/제주%20상록식당" },
+  "f_chadol": { name: "차돌집", category: "고기 (흑돼지/소고기)", lat: 33.485, lng: 126.492, desc: "연동 소고기 특수부위 맛집. 가성비 좋은 숯불구이.", url: "https://map.naver.com/p/search/제주%20차돌집" },
+  "f_topyeong": { name: "토평골", category: "고기 (흑돼지/소고기)", lat: 33.265, lng: 126.580, desc: "두툼하고 육즙 가득한 흑돼지를 연탄불에 구워주는 도민 맛집.", url: "https://map.naver.com/p/search/제주%20토평골" },
+  
+  "f_sanji": { name: "산지해장국", category: "국/찌개 (해장국)", lat: 33.515, lng: 126.532, desc: "소내장 듬뿍 칼칼한 내장탕. 도민 추천 해장국.", url: "https://map.naver.com/p/search/제주%20산지해장국" },
+  "f_sunflower": { name: "신해바라기분식", category: "국/찌개 (해장국)", lat: 33.479, lng: 126.474, desc: "고기 듬뿍 걸쭉하고 매운 뚝배기 순두부찌개 로컬 맛집.", url: "https://map.naver.com/p/search/신해바라기분식%20한라대점" },
+  "f_daechun": { name: "대춘해장국 노형점", category: "국/찌개 (해장국)", lat: 33.481, lng: 126.471, desc: "맑고 깔끔한 국물의 선지 해장국 및 부드러운 내장탕.", url: "https://map.naver.com/p/search/대춘해장국%20노형점" },
+  "f_woojin": { name: "우진해장국", category: "국/찌개 (해장국)", lat: 33.511, lng: 126.520, desc: "제주산 고사리를 갈아 넣은 고사리 육개장 전국구 핫플.", url: "https://map.naver.com/p/search/제주%20우진해장국" },
+  
+  "f_daemun": { name: "대문집", category: "해산물/향토음식", lat: 33.396, lng: 126.257, desc: "갈치조림과 전복뚝배기. 깔끔하고 정갈한 제주 향토음식.", url: "https://map.naver.com/p/search/제주%20대문집" },
+  "f_hanrim": { name: "한림수협 센터", category: "해산물/향토음식", lat: 33.415, lng: 126.262, desc: "신선한 제철 횟감을 가성비 좋게 포장할 수 있는 회센터.", url: "https://map.naver.com/p/search/한림수협다목적어업인지원센터" },
+  "f_jjukku": { name: "쭈꾸쭈꾸쭈꾸미", category: "해산물/향토음식", lat: 33.488, lng: 126.495, desc: "매콤 중독성 양념 주꾸미 볶음. 남은 양념에 치즈 볶음밥.", url: "https://map.naver.com/p/search/제주%20쭈꾸쭈꾸쭈꾸미" },
+  
+  "f_ribosco": { name: "리보스코화덕피자", category: "양식/기타", lat: 33.486, lng: 126.481, desc: "해녀 채취 톳 도우 위에 감자튀김을 올린 한라산 피자 시그니처.", url: "https://map.naver.com/p/search/제주%20리보스코화덕피자" }
+};
+
+// 🌟 소분류별 직관적인 컬러 팔레트 정의 (배열 및 텍스트 매칭 완벽 일치)
+const CAT_PALETTE = {
+  "명소/여행지": { bg: "#E2EFEF", text: "#1C6E74", pin: "#25939A" },
+  "카페/디저트": { bg: "#FDF5E6", text: "#D48D28", pin: "#F0A500" },
+  "고기 (흑돼지/소고기)": { bg: "#FCE8E5", text: "#C4321F", pin: "#E34A33" },
+  "국/찌개 (해장국)": { bg: "#F0EBF2", text: "#6B5282", pin: "#8E6DAE" },
+  "해산물/향토음식": { bg: "#E5F0FA", text: "#2A6FA8", pin: "#3D8CDA" },
+  "양식/기타": { bg: "#EBF0E6", text: "#5A7350", pin: "#759668" }
+};
+
+window.activeExploreKeys = new Set();
+
+// --- 탭 컨트롤 ---
+const buttons = { schedule: document.getElementById('btn-schedule'), explore: document.getElementById('btn-explore'), packing: document.getElementById('btn-packing') };
+const views = { schedule: document.getElementById('view-schedule'), explore: document.getElementById('view-explore'), packing: document.getElementById('view-packing') };
+
+function showView(name) {
+  Object.keys(buttons).forEach(k => {
+    buttons[k].classList.toggle('active', k === name);
+    views[k].classList.toggle('active', k === name);
+  });
+}
+Object.keys(buttons).forEach(k => buttons[k].addEventListener('click', () => showView(k)));
+
+// --- 장소 탐색 리스트 그리기 ---
+function renderExploreList() {
+  const wrapper = document.getElementById("explore-wrapper");
+  wrapper.innerHTML = "";
+
+  const activeCats = Array.from(document.querySelectorAll('#category-chips .chip.on')).map(c => c.dataset.category);
+
+  Object.keys(ALL_PLACES).forEach(key => {
+    const place = ALL_PLACES[key];
+    if (!activeCats.includes('all') && !activeCats.includes(place.category)) return;
+
+    const isChecked = window.activeExploreKeys.has(key) ? 'checked' : '';
+    const pal = CAT_PALETTE[place.category] || { bg: "#eee", text: "#555", pin: "#888" };
+
+    wrapper.innerHTML += `
+      <div class="place-card">
+        <div class="info">
+          <div class="name-wrap">
+            <span class="name">${place.name}</span>
+            <span class="category" style="background:${pal.bg}; color:${pal.text};">${place.category}</span>
+          </div>
+          <p class="desc">${place.desc}</p>
+          ${place.url ? `<a href="${place.url}" target="_blank" class="popup-naver-link">📍 네이버 지도에서 보기</a>` : ''}
+        </div>
+        <label class="switch">
+          <input type="checkbox" class="toggle-map-btn" data-key="${key}" ${isChecked}>
+          <span class="slider"></span>
+        </label>
+      </div>
+    `;
+  });
+
+  document.querySelectorAll('.toggle-map-btn').forEach(btn => {
+    btn.addEventListener('change', (e) => {
+      const key = e.target.dataset.key;
+      if (e.target.checked) {
+        window.activeExploreKeys.add(key);
+        window.drawExploreMarkers(); 
+        
+        const marker = window.exploreMarkers[key];
+        if (marker) {
+          if (window.innerWidth <= 800) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+          mainMap.flyTo(marker.getLatLng(), 13, { duration: 0.5 });
+          setTimeout(() => marker.openPopup(), 500);
+        }
+      } else {
+        window.activeExploreKeys.delete(key);
+        window.drawExploreMarkers(); 
+      }
+      updateMasterToggle();
+    });
+  });
+  updateMasterToggle();
+}
+
+function updateMasterToggle() {
+  const visibleToggles = Array.from(document.querySelectorAll('.toggle-map-btn'));
+  const masterToggle = document.getElementById('toggle-all-explore');
+  if (!masterToggle) return;
+  if (visibleToggles.length === 0) { masterToggle.checked = false; return; }
+  masterToggle.checked = visibleToggles.every(btn => btn.checked);
+}
+
+document.querySelectorAll('#category-chips .chip').forEach(chip => {
+  chip.addEventListener('click', (e) => {
+    const cat = e.target.dataset.category;
+    if (cat === 'all') {
+      const isTurningOn = !e.target.classList.contains('on');
+      document.querySelectorAll('#category-chips .chip').forEach(c => c.classList.toggle('on', isTurningOn));
+    } else {
+      e.target.classList.toggle('on');
+      const allCats = Array.from(document.querySelectorAll('#category-chips .chip')).filter(c => c.dataset.category !== 'all');
+      document.querySelector('#category-chips .chip[data-category="all"]').classList.toggle('on', allCats.every(c => c.classList.contains('on')));
+    }
+    renderExploreList();
+    if(window.drawMapLayers) window.drawExploreMarkers(); 
+  });
+});
+
+document.getElementById('toggle-all-explore').addEventListener('change', (e) => {
+  const isChecked = e.target.checked;
+  document.querySelectorAll('.toggle-map-btn').forEach(btn => {
+    if (btn.checked !== isChecked) {
+      btn.checked = isChecked;
+      const key = btn.dataset.key;
+      if (isChecked) window.activeExploreKeys.add(key);
+      else window.activeExploreKeys.delete(key);
+    }
+  });
+  window.drawExploreMarkers();
+});
+
+renderExploreList(); 
+
+// --- 오늘 날짜 자동 하이라이트 ---
+(function setupInitialView() {
+  const TRIP_DAYS = {
+    d1: new Date(2026, 7, 3),  // 8/3
+    d2: new Date(2026, 7, 4),  // 8/4
+    d3: new Date(2026, 7, 5),  // 8/5
+    d4: new Date(2026, 7, 6),  // 8/6
+    d5: new Date(2026, 7, 7),  // 8/7
+  };
+  const now = new Date();
+  const todayKey = Object.keys(TRIP_DAYS).find(key => {
+    const d = TRIP_DAYS[key];
+    return now.getFullYear() === d.getFullYear() && now.getMonth() === d.getMonth() && now.getDate() === d.getDate();
+  });
+
+  // 지도 기본값: 오늘이 여행 기간이면 그 날짜만, 아니면 1일차만 표시
+  const targetDay = todayKey || 'd1';
+  document.querySelectorAll('.m-chip.schedule-chip').forEach(chip => chip.classList.remove('on'));
+  const targetChip = document.querySelector(`.m-chip.schedule-chip[data-day="${targetDay}"]`);
+  if (targetChip) targetChip.classList.add('on');
+
+  if (!todayKey) return; // 여행 기간이 아니면 '오늘' 하이라이트는 표시하지 않음
+
+  const section = document.getElementById(`sec-${todayKey}`);
+  const badge = document.getElementById(`badge-${todayKey}`);
+  if (section) section.classList.add('is-today');
+  if (badge) badge.style.display = 'inline-block';
+
+  // 일정 탭이 기본 탭이니, 로드 시 오늘 섹션으로 살짝 스크롤
+  setTimeout(() => {
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+})();
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBEUkwBCFv0ICfJ92AG_zK6Xkazx4ejchE",
+    authDomain: "planning-with-ai-48e01.firebaseapp.com",
+    projectId: "planning-with-ai-48e01",
+    storageBucket: "planning-with-ai-48e01.firebasestorage.app",
+    messagingSenderId: "291204006646",
+    appId: "1:291204006646:web:8418755adf9f1d747ba2d7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  
+  // -----------------------------------------------------
+  // A. 준비물 체크리스트 (v3 창고)
+  // -----------------------------------------------------
+  const packingRef = collection(db, "packing_items_v3");
+  onSnapshot(query(packingRef, orderBy("order", "asc")), (snapshot) => {
+    if (snapshot.empty && !window.packSeeded) {
+        window.packSeeded = true;
+        ["신분증/여권", "수영복/래쉬가드", "비상약", "보조배터리"].forEach((item, idx) => {
+            addDoc(packingRef, { text: item, seunghyun: false, soyoung: false, order: Date.now() + idx });
+        });
+    }
+
+    const packListEl = document.getElementById("packing-list-ul");
+    packListEl.innerHTML = ""; 
+    snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const id = docSnap.id;
+        const li = document.createElement("li");
+        
+        li.className = "packing-item " + ((data.seunghyun && data.soyoung) ? "done" : "");
+        li.innerHTML = `
+          <span class="packing-text">${data.text}</span>
+          <div class="user-checks">
+            <label class="user-check-label"><input type="checkbox" id="sh-${id}" ${data.seunghyun ? "checked" : ""}> 승현</label>
+            <label class="user-check-label soyoung"><input type="checkbox" id="sy-${id}" ${data.soyoung ? "checked" : ""}> 소영</label>
+            <button class="packing-delete">✕</button>
+          </div>
+        `;
+        li.querySelector(`#sh-${id}`).addEventListener("change", (e) => updateDoc(doc(db, "packing_items_v3", id), { seunghyun: e.target.checked }));
+        li.querySelector(`#sy-${id}`).addEventListener("change", (e) => updateDoc(doc(db, "packing_items_v3", id), { soyoung: e.target.checked }));
+        li.querySelector(".packing-delete").addEventListener("click", () => {
+          if (!confirm(`"${data.text}"을(를) 목록에서 삭제할까요?`)) return;
+          deleteDoc(doc(db, "packing_items_v3", id));
+        });
+        packListEl.appendChild(li);
+    });
+  });
+
+  async function addPackingItem() {
+      const inputEl = document.getElementById("packing-input");
+      if (!inputEl.value.trim()) return;
+      await addDoc(packingRef, { text: inputEl.value.trim(), seunghyun: false, soyoung: false, order: Date.now() });
+      inputEl.value = "";
+  }
+
+  document.getElementById("btn-add-packing").addEventListener("click", addPackingItem);
+  document.getElementById("packing-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") addPackingItem();
+  });
+
+  // -----------------------------------------------------
+  // B. 지도 초기화 (카카오맵)
+  // -----------------------------------------------------
+  window.mainMap = new kakao.maps.Map(document.getElementById('jejumap'), {
+    center: new kakao.maps.LatLng(33.36, 126.52),
+    level: 10
+  });
+  window.mainMap.setZoomable(true);
+
+  window.dayLayers = {};       // { d1: { polyline, overlays: [] }, ... }
+  window.exploreMarkers = {};  // { placeKey: kakao.maps.Marker }
+  window.lastInfoWindow = null;
+  const DAY_COLORS = { d1: '#E37B34', d2: '#1C6E74', d3: '#2A6FA8', d4: '#5A7350', d5: '#8B4B6B' };
+
+  function makeDotImage(color) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"><circle cx="11" cy="11" r="8" fill="${color}" stroke="white" stroke-width="2.5"/></svg>`;
+    const url = 'data:image/svg+xml;base64,' + btoa(svg);
+    return new kakao.maps.MarkerImage(url, new kakao.maps.Size(22, 22), { offset: new kakao.maps.Point(11, 11) });
+  }
+
+  window.addFromPopup = async function(placeKey) {
+    const day = document.getElementById(`popup-sel-${placeKey}`).value;
+    if(!day) return;
+    await addDoc(collection(db, "trip_schedule_v6"), { day: day, placeId: placeKey, time: "", order: Date.now() });
+    alert(`${ALL_PLACES[placeKey].name}이(가) 일정에 추가되었습니다!`);
+    if (window.lastInfoWindow) window.lastInfoWindow.close();
+    document.getElementById('btn-schedule').click();
+  };
+
+  // -----------------------------------------------------
+  // C. 실시간 조립형 일정 관리 (v6 창고)
+  // -----------------------------------------------------
+  const scheduleRef = collection(db, "trip_schedule_v6");
+  window.currentScheduleDocs = { d1: [], d2: [], d3: [], d4: [], d5: [] };
+
+  window.deleteItem = async function(docId, placeName) {
+    if (!confirm(`"${placeName}"을(를) 일정에서 삭제할까요?`)) return;
+    await deleteDoc(doc(db, "trip_schedule_v6", docId));
+  };
+  window.updateTime = async function(docId, newTime) { await updateDoc(doc(db, "trip_schedule_v6", docId), { time: newTime }); };
+  window.moveItem = async function(day, index, direction) {
+    const list = window.currentScheduleDocs[day];
+    const targetIndex = index + direction;
+    if(targetIndex < 0 || targetIndex >= list.length) return;
+    const currentOrder = list[index].order;
+    const targetOrder = list[targetIndex].order;
+    await updateDoc(doc(db, "trip_schedule_v6", list[index].id), { order: targetOrder });
+    await updateDoc(doc(db, "trip_schedule_v6", list[targetIndex].id), { order: currentOrder });
+  };
+
+  onSnapshot(query(scheduleRef, orderBy("order", "asc")), (snapshot) => {
+    if (snapshot.empty && !window.schSeeded) {
+        window.schSeeded = true;
+        const initial = [
+          { day: 'd1', id: 'p_airport', time: '18:00' }, { day: 'd1', id: 'p_base', time: '18:30' }, { day: 'd1', id: 'p_olle', time: '저녁' },
+          { day: 'd2', id: 'p_shiny', time: '오전' }, { day: 'd2', id: 'p_soesokkak', time: '오후' }, { day: 'd2', id: 'p_base', time: '저녁' },
+          { day: 'd3', id: 'p_gwangchigi', time: '오전' }, { day: 'd3', id: 'p_seopji', time: '낮' }, { day: 'd3', id: 'p_gimnyeong', time: '오후' }, { day: 'd3', id: 'p_base', time: '저녁' },
+          { day: 'd4', id: 'p_alpaca', time: '오전' }, { day: 'd4', id: 'p_aewol', time: '점심' }, { day: 'd4', id: 'p_geumneung', time: '오후' }, { day: 'd4', id: 'p_sindo', time: '해질녘' }, { day: 'd4', id: 'p_base', time: '밤' },
+          { day: 'd5', id: 'p_base', time: '오전' }, { day: 'd5', id: 'p_ihoteu', time: '오후' }, { day: 'd5', id: 'p_airport', time: '19:00' }
+        ];
+        initial.forEach((item, idx) => addDoc(scheduleRef, { day: item.day, placeId: item.id, time: item.time, order: Date.now() + idx * 1000 }));
+        return;
+    }
+
+    const temp = { d1: [], d2: [], d3: [], d4: [], d5: [] };
+    snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        if (temp[data.day] && ALL_PLACES[data.placeId]) {
+            temp[data.day].push({ id: docSnap.id, ...data, place: ALL_PLACES[data.placeId] });
+        }
+    });
+    window.currentScheduleDocs = temp;
+
+    renderScheduleUI();
+    window.drawScheduleLayers();
+  });
+
+  function renderScheduleUI() {
+    ['d1', 'd2', 'd3', 'd4', 'd5'].forEach(day => {
+      const container = document.getElementById(`timeline-${day}`);
+      if (!container) return;
+      
+      const list = window.currentScheduleDocs[day];
+      if (list.length === 0) {
+        container.innerHTML = `<div style="color:#888; font-size:13.5px; padding-bottom:10px;">일정이 비어있습니다. 장소 탐색 탭에서 스위치를 켜고 지도 핀을 눌러 추가해주세요.</div>`;
+        return;
+      }
+
+      let htmlString = "";
+      list.forEach((item, index) => {
+        const upDisabled = index === 0 ? 'disabled style="opacity:0.3"' : '';
+        const downDisabled = index === list.length - 1 ? 'disabled style="opacity:0.3"' : '';
+        
+        const pal = CAT_PALETTE[item.place.category] || { bg: "#eee", text: "#555" };
+
+        htmlString += `
+          <div class="stop">
+            <div class="stop-header">
+              <div class="time-box">
+                <input type="text" class="time-input" placeholder="시간 입력" value="${item.time || ''}" 
+                       onblur="window.updateTime('${item.id}', this.value)" 
+                       onkeydown="if(event.key==='Enter') this.blur();">
+              </div>
+              <div class="stop-controls">
+                <button class="btn-ctrl" onclick="window.moveItem('${day}', ${index}, -1)" ${upDisabled}>▲</button>
+                <button class="btn-ctrl" onclick="window.moveItem('${day}', ${index}, 1)" ${downDisabled}>▼</button>
+                <button class="btn-ctrl del" onclick="window.deleteItem('${item.id}', '${item.place.name.replace(/'/g, "\\'")}')">✕</button>
+              </div>
+            </div>
+            <div class="name-wrap">
+              <span class="name">${item.place.name}</span>
+              <span class="category" style="background:${pal.bg}; color:${pal.text};">${item.place.category}</span>
+            </div>
+            <div class="note">${item.place.desc}</div>
+            ${item.place.url ? `<a href="${item.place.url}" target="_blank" class="popup-naver-link">📍 네이버 지도</a>` : ''}
+          </div>
+        `;
+      });
+      container.innerHTML = htmlString;
+    });
+  }
+
+  // -----------------------------------------------------
+  // D. 지도 렌더링 (카카오맵, 컬러 팔레트 연동)
+  // -----------------------------------------------------
+  window.drawScheduleLayers = function() {
+    Object.keys(window.dayLayers).forEach(k => {
+      const layer = window.dayLayers[k];
+      if (layer.polyline) layer.polyline.setMap(null);
+      layer.overlays.forEach(o => o.setMap(null));
+    });
+    window.dayLayers = {};
+
+    ['d1', 'd2', 'd3', 'd4', 'd5'].forEach(day => {
+      const chip = document.querySelector(`.m-chip[data-day="${day}"]`);
+      if (!chip || !chip.classList.contains('on')) return;
+
+      const places = window.currentScheduleDocs[day];
+      if (!places || places.length === 0) return;
+
+      const latlngs = places.map(p => new kakao.maps.LatLng(p.place.lat, p.place.lng));
+
+      const polyline = new kakao.maps.Polyline({
+        path: latlngs,
+        strokeWeight: 3,
+        strokeColor: DAY_COLORS[day],
+        strokeOpacity: 0.8,
+        strokeStyle: 'shortdash'
+      });
+      polyline.setMap(window.mainMap);
+
+      const overlays = places.map((p, i) => {
+        const iconHtml = `
+          <div style="position:relative; font-family:sans-serif;">
+            <div style="position:absolute; left:-14px; top:-14px; width:28px; height:28px; background:${DAY_COLORS[day]}; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; border:2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index:2;">${i + 1}</div>
+            <div style="position:absolute; left:16px; top:-12px; background:rgba(255,255,255,0.95); border:1.5px solid ${DAY_COLORS[day]}; color:#222; padding:3px 8px; border-radius:6px; font-size:12.5px; font-weight:700; white-space:nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index:1;">${p.place.name}</div>
+          </div>
+        `;
+        const overlay = new kakao.maps.CustomOverlay({
+          position: new kakao.maps.LatLng(p.place.lat, p.place.lng),
+          content: iconHtml,
+          xAnchor: 0,
+          yAnchor: 0,
+          zIndex: 2
+        });
+        overlay.setMap(window.mainMap);
+        return overlay;
+      });
+
+      window.dayLayers[day] = { polyline, overlays };
+    });
+  };
+
+  window.drawExploreMarkers = function() {
+    Object.values(window.exploreMarkers).forEach(m => m.setMap(null));
+    window.exploreMarkers = {};
+
+    window.activeExploreKeys.forEach(key => {
+      const p = ALL_PLACES[key];
+      if(!p) return;
+
+      const pal = CAT_PALETTE[p.category] || { text: "#555", pin: "#888" };
+
+      const marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(p.lat, p.lng),
+        image: makeDotImage(pal.pin || pal.text)
+      });
+      marker.setMap(window.mainMap);
+
+      const popupHtml = `
+        <div class="popup-content">
+          <h3 class="popup-title">${p.name}</h3>
+          <span class="popup-cat" style="background:${pal.bg}; color:${pal.text};">${p.category}</span>
+          <div class="popup-controls">
+            <select id="popup-sel-${key}" class="popup-select">
+              <option value="d1">1일 차</option>
+              <option value="d2">2일 차</option>
+              <option value="d3">3일 차</option>
+              <option value="d4">4일 차</option>
+              <option value="d5">5일 차</option>
+            </select>
+            <button class="popup-btn" onclick="window.addFromPopup('${key}')">추가</button>
+          </div>
+          ${p.url ? `<a href="${p.url}" target="_blank" class="popup-naver-link">📍 네이버 지도에서 보기</a>` : ''}
+        </div>
+      `;
+      const infowindow = new kakao.maps.InfoWindow({ content: `<div style="padding:10px;">${popupHtml}</div>`, removable: true });
+
+      kakao.maps.event.addListener(marker, 'click', () => {
+        if (window.lastInfoWindow) window.lastInfoWindow.close();
+        infowindow.open(window.mainMap, marker);
+        window.lastInfoWindow = infowindow;
+      });
+
+      window.exploreMarkers[key] = marker;
+    });
+  };
+
+  const mapChips = document.querySelectorAll('.m-chip.schedule-chip');
+  mapChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const dayKey = chip.dataset.day;
+      if (dayKey === 'all') {
+        const isTurningOn = !chip.classList.contains('on');
+        mapChips.forEach(c => c.classList.toggle('on', isTurningOn));
+      } else {
+        chip.classList.toggle('on');
+        const allDayChips = Array.from(mapChips).filter(c => c.dataset.day !== 'all');
+        document.querySelector('.m-chip[data-day="all"]').classList.toggle('on', allDayChips.every(c => c.classList.contains('on')));
+      }
+      window.drawScheduleLayers();
+    });
+  });
+
+</script>
+
+</body>
+</html>
