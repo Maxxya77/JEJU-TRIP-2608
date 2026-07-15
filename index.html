@@ -189,6 +189,9 @@
   .map-search-result-item:hover { background: #F4F6F8; }
   .map-search-result-item .r-name { font-weight: 800; font-size: 13.5px; color: var(--ink); }
   .map-search-result-item .r-addr { font-size: 11.5px; color: rgba(35,36,31,0.55); margin-top: 2px; }
+  .map-search-result-item.starred { background: #FFFBF0; }
+  .map-search-result-item.starred .r-name { color: var(--tangerine-deep); }
+  .search-group-label { padding: 8px 14px 4px; font-size: 11px; font-weight: 800; color: rgba(35,36,31,0.45); background: #FAFAFA; }
 
   .map-expand-btn {
     position: absolute; bottom: 15px; right: 15px; z-index: 1000;
@@ -197,9 +200,9 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.25); display: none;
   }
 
-  .popup-content { text-align: center; min-width: 170px; font-family: 'Pretendard', sans-serif; }
+  .popup-content { text-align: center; width: 200px; font-family: 'Pretendard', sans-serif; }
   .popup-title-row { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-  .popup-title { font-size: 16px; font-weight: 800; margin: 0; color: var(--ink); }
+  .popup-title { font-size: 16px; font-weight: 800; margin: 0; color: var(--ink); overflow-wrap: break-word; word-break: keep-all; }
   .popup-cat { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; display: inline-block; }
   .popup-controls { display: flex; gap: 6px; margin-bottom: 6px; }
   .popup-select { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; outline: none; }
@@ -211,7 +214,7 @@
   .link-row > .popup-naver-link, .link-row > .nav-link { display: inline-block; margin-top: 0; }
 
   @media (max-width: 800px) {
-    .popup-content { min-width: 140px; }
+    .popup-content { width: 170px; }
     .popup-title { font-size: 13.5px; }
     .popup-cat { font-size: 10px; padding: 1px 5px; }
     .popup-controls { margin-bottom: 4px; }
@@ -455,6 +458,7 @@ function renderExploreList() {
   document.querySelectorAll('.toggle-map-btn').forEach(btn => {
     btn.addEventListener('change', (e) => {
       const key = e.target.dataset.key;
+      if (window.clearSearchResultMarker) window.clearSearchResultMarker();
       if (e.target.checked) {
         window.activeExploreKeys.add(key);
         window.drawExploreMarkers(); 
@@ -645,7 +649,20 @@ renderExploreList();
   window.exploreMarkers = {};  // { placeKey: kakao.maps.Marker }
   window.exploreLabels = {};   // { placeKey: kakao.maps.CustomOverlay } 작은 지명 라벨
   window.lastInfoWindow = null;
+  window.searchResultMarker = null;
   const DAY_COLORS = { d1: '#E37B34', d2: '#1C6E74', d3: '#2A6FA8', d4: '#5A7350', d5: '#8B4B6B' };
+
+  // 검색해서 뜬 임시 핀 정리 (다른 팝업이 뜨거나 지도 빈 곳을 누르면 사라짐)
+  window.clearSearchResultMarker = function() {
+    if (window.searchResultMarker) {
+      window.searchResultMarker.setMap(null);
+      window.searchResultMarker = null;
+    }
+  };
+  kakao.maps.event.addListener(window.mainMap, 'click', () => {
+    window.clearSearchResultMarker();
+    if (window.lastInfoWindow) { window.lastInfoWindow.close(); window.lastInfoWindow = null; }
+  });
 
   function makeDotImage(color) {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"><circle cx="11" cy="11" r="8" fill="${color}" stroke="white" stroke-width="2.5"/></svg>`;
@@ -675,6 +692,7 @@ renderExploreList();
   // 일정 지도 위 마커(번호+이름표) 클릭 시 네이버 지도/길찾기 링크 보여주기
   window.openStopLinks = function(name, lat, lng, naverUrl) {
     if (window.lastInfoWindow) window.lastInfoWindow.close();
+    window.clearSearchResultMarker();
     const content = `
       <div class="popup-content" style="padding:10px; min-width:150px;">
         <h3 class="popup-title" style="margin-bottom:8px;">${name}</h3>
@@ -796,6 +814,27 @@ renderExploreList();
     }
   });
 
+  // 리스트(ALL_PLACES)에 이미 있는 장소를 검색으로 찾았을 때 -> 스위치 켜는 것과 동일하게 동작
+  window.activateStarredPlace = function(key) {
+    window.clearSearchResultMarker();
+    window.activeExploreKeys.add(key);
+    window.drawExploreMarkers();
+    renderExploreList();
+
+    const place = ALL_PLACES[key];
+    if (!place) return;
+    window.flyToPlace(place.lat, place.lng);
+    setTimeout(() => {
+      const marker = window.exploreMarkers[key];
+      const iw = window.exploreInfoWindows[key];
+      if (marker && iw) {
+        if (window.lastInfoWindow) window.lastInfoWindow.close();
+        iw.open(window.mainMap, marker);
+        window.lastInfoWindow = iw;
+      }
+    }, 450);
+  };
+
   // 검색창 입력 처리 (디바운스)
   const mapSearchInput = document.getElementById('map-search-input');
   const mapSearchResults = document.getElementById('map-search-results');
@@ -809,22 +848,44 @@ renderExploreList();
       mapSearchResults.innerHTML = '';
       return;
     }
+
+    // 1) 내 리스트(ALL_PLACES: 기존 37개 + Firestore 저장분)에서 먼저 매칭
+    const kw = keyword.toLowerCase();
+    const starredKeys = Object.keys(ALL_PLACES).filter(k => k !== 'p_base' && ALL_PLACES[k].name.toLowerCase().includes(kw));
+    const starredHtml = starredKeys.length ? `
+      <div class="search-group-label">⭐ 내 리스트에 있어요</div>
+      ${starredKeys.map(k => `
+        <div class="map-search-result-item starred" data-star-key="${k}">
+          <div class="r-name">⭐ ${ALL_PLACES[k].name}</div>
+          <div class="r-addr">${ALL_PLACES[k].category}</div>
+        </div>
+      `).join('')}
+    ` : '';
+
+    // 먼저 "내 리스트" 결과만 즉시 표시, 카카오 검색 결과는 도착하는 대로 아래에 이어붙임
+    mapSearchResults.innerHTML = starredHtml + `<div id="kakao-search-group"><div class="map-search-result-item" style="color:#999;">검색 중...</div></div>`;
+    mapSearchResults.classList.add('show');
+    bindStarredClicks();
+
     searchDebounceTimer = setTimeout(() => {
       placesService.keywordSearch(keyword, (data, status) => {
+        const kakaoGroup = document.getElementById('kakao-search-group');
+        if (!kakaoGroup) return;
         if (status !== kakao.maps.services.Status.OK || data.length === 0) {
-          mapSearchResults.innerHTML = `<div class="map-search-result-item" style="color:#999;">검색 결과가 없어요</div>`;
-          mapSearchResults.classList.add('show');
+          kakaoGroup.innerHTML = `<div class="map-search-result-item" style="color:#999;">카카오맵 검색 결과가 없어요</div>`;
           return;
         }
         const top = data.slice(0, 8);
-        mapSearchResults.innerHTML = top.map((d, i) => `
-          <div class="map-search-result-item" data-idx="${i}">
-            <div class="r-name">${d.place_name}</div>
-            <div class="r-addr">${d.road_address_name || d.address_name}</div>
-          </div>
-        `).join('');
-        mapSearchResults.classList.add('show');
-        mapSearchResults.querySelectorAll('.map-search-result-item[data-idx]').forEach(el => {
+        kakaoGroup.innerHTML = `
+          <div class="search-group-label">🔍 카카오맵 검색 결과</div>
+          ${top.map((d, i) => `
+            <div class="map-search-result-item" data-idx="${i}">
+              <div class="r-name">${d.place_name}</div>
+              <div class="r-addr">${d.road_address_name || d.address_name}</div>
+            </div>
+          `).join('')}
+        `;
+        kakaoGroup.querySelectorAll('.map-search-result-item[data-idx]').forEach(el => {
           el.addEventListener('click', () => {
             const idx = el.dataset.idx;
             window.showSearchResultPopup(top[idx]);
@@ -834,6 +895,16 @@ renderExploreList();
         });
       }, { size: 8 });
     }, 350);
+
+    function bindStarredClicks() {
+      mapSearchResults.querySelectorAll('.map-search-result-item[data-star-key]').forEach(el => {
+        el.addEventListener('click', () => {
+          window.activateStarredPlace(el.dataset.starKey);
+          mapSearchResults.classList.remove('show');
+          mapSearchInput.value = '';
+        });
+      });
+    }
   });
 
   document.addEventListener('click', (e) => {
@@ -1058,6 +1129,7 @@ renderExploreList();
 
       kakao.maps.event.addListener(marker, 'click', () => {
         if (window.lastInfoWindow) window.lastInfoWindow.close();
+        window.clearSearchResultMarker();
         infowindow.open(window.mainMap, marker);
         window.lastInfoWindow = infowindow;
       });
