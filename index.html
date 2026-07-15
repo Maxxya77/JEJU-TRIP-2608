@@ -598,6 +598,25 @@ renderExploreList();
     document.getElementById('btn-schedule').click();
   };
 
+  // 일정 지도 위 마커(번호+이름표) 클릭 시 네이버 지도/길찾기 링크 보여주기
+  window.openStopLinks = function(name, lat, lng, naverUrl) {
+    if (window.lastInfoWindow) window.lastInfoWindow.close();
+    const content = `
+      <div class="popup-content" style="padding:10px; min-width:150px;">
+        <h3 class="popup-title" style="font-size:14px; margin-bottom:8px;">${name}</h3>
+        ${naverUrl ? `<a href="${naverUrl}" target="_blank" class="popup-naver-link" style="margin-top:0;">📍 네이버 지도</a>` : ''}
+        <a href="${window.kakaoNavLink(name, lat, lng)}" target="_blank" class="nav-link">🧭 길찾기</a>
+      </div>
+    `;
+    const iw = new kakao.maps.InfoWindow({
+      position: new kakao.maps.LatLng(lat, lng),
+      content,
+      removable: true
+    });
+    iw.open(window.mainMap);
+    window.lastInfoWindow = iw;
+  };
+
   // -----------------------------------------------------
   // C. 실시간 조립형 일정 관리 (v6 창고)
   // -----------------------------------------------------
@@ -722,8 +741,10 @@ renderExploreList();
       polyline.setMap(window.mainMap);
 
       const overlays = places.map((p, i) => {
+        const safeName = p.place.name.replace(/'/g, "\\'");
+        const naverArg = p.place.url ? `'${p.place.url}'` : 'null';
         const iconHtml = `
-          <div style="position:relative; font-family:sans-serif;">
+          <div style="position:relative; font-family:sans-serif; cursor:pointer;" onclick="window.openStopLinks('${safeName}', ${p.place.lat}, ${p.place.lng}, ${naverArg})">
             <div style="position:absolute; left:-14px; top:-14px; width:28px; height:28px; background:${DAY_COLORS[day]}; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; border:2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index:2;">${i + 1}</div>
             <div style="position:absolute; left:16px; top:-12px; background:rgba(255,255,255,0.95); border:1.5px solid ${DAY_COLORS[day]}; color:#222; padding:3px 8px; border-radius:6px; font-size:12.5px; font-weight:700; white-space:nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index:1;">${p.place.name}</div>
           </div>
