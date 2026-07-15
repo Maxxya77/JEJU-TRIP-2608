@@ -171,6 +171,7 @@
   .popup-select { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; outline: none; }
   .popup-btn { background: var(--tangerine); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer; }
   .popup-naver-link { display: block; margin-top: 8px; font-size: 12.5px; font-weight: 700; color: var(--teal); text-decoration: none; border-bottom: 1.5px dashed var(--teal); }
+  .nav-link { display: block; margin-top: 6px; font-size: 12.5px; font-weight: 700; color: #3A2929; text-decoration: none; border-bottom: 1.5px dashed #B8860B; }
 
   @media (max-width: 800px) {
     .dashboard-layout { flex-direction: column; }
@@ -276,6 +277,11 @@
 </div>
 
 <script>
+// --- 카카오맵 길찾기 링크 헬퍼 ---
+window.kakaoNavLink = function(name, lat, lng) {
+  return `https://map.kakao.com/link/to/${encodeURIComponent(name)},${lat},${lng}`;
+};
+
 // --- 데이터 베이스 (사용자 요청 리스트 100% 반영) ---
 const ALL_PLACES = {
   // 명소/여행지 (기존 13개)
@@ -371,6 +377,7 @@ function renderExploreList() {
           </div>
           <p class="desc">${place.desc}</p>
           ${place.url ? `<a href="${place.url}" target="_blank" class="popup-naver-link">📍 네이버 지도에서 보기</a>` : ''}
+          <a href="${window.kakaoNavLink(place.name, place.lat, place.lng)}" target="_blank" class="nav-link">🧭 길찾기 (카카오내비)</a>
         </div>
         <label class="switch">
           <input type="checkbox" class="toggle-map-btn" data-key="${key}" ${isChecked}>
@@ -387,11 +394,19 @@ function renderExploreList() {
         window.activeExploreKeys.add(key);
         window.drawExploreMarkers(); 
         
-        const marker = window.exploreMarkers[key];
-        if (marker) {
+        const place = ALL_PLACES[key];
+        if (place) {
           if (window.innerWidth <= 800) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-          mainMap.flyTo(marker.getLatLng(), 13, { duration: 0.5 });
-          setTimeout(() => marker.openPopup(), 500);
+          window.flyToPlace(place.lat, place.lng);
+          setTimeout(() => {
+            const marker = window.exploreMarkers[key];
+            const iw = window.exploreInfoWindows[key];
+            if (marker && iw) {
+              if (window.lastInfoWindow) window.lastInfoWindow.close();
+              iw.open(window.mainMap, marker);
+              window.lastInfoWindow = iw;
+            }
+          }, 450);
         }
       } else {
         window.activeExploreKeys.delete(key);
@@ -423,7 +438,7 @@ document.querySelectorAll('#category-chips .chip').forEach(chip => {
       document.querySelector('#category-chips .chip[data-category="all"]').classList.toggle('on', allCats.every(c => c.classList.contains('on')));
     }
     renderExploreList();
-    if(window.drawMapLayers) window.drawExploreMarkers(); 
+    window.drawExploreMarkers();
   });
 });
 
@@ -554,6 +569,7 @@ renderExploreList();
 
   window.dayLayers = {};       // { d1: { polyline, overlays: [] }, ... }
   window.exploreMarkers = {};  // { placeKey: kakao.maps.Marker }
+  window.exploreLabels = {};   // { placeKey: kakao.maps.CustomOverlay } 작은 지명 라벨
   window.lastInfoWindow = null;
   const DAY_COLORS = { d1: '#E37B34', d2: '#1C6E74', d3: '#2A6FA8', d4: '#5A7350', d5: '#8B4B6B' };
 
@@ -562,6 +578,14 @@ renderExploreList();
     const url = 'data:image/svg+xml;base64,' + btoa(svg);
     return new kakao.maps.MarkerImage(url, new kakao.maps.Size(22, 22), { offset: new kakao.maps.Point(11, 11) });
   }
+
+  // 장소 탐색에서 스위치를 켰을 때, 지도를 그 위치로 약간 확대하며 이동
+  window.flyToPlace = function(lat, lng) {
+    const pos = new kakao.maps.LatLng(lat, lng);
+    const targetLevel = Math.min(window.mainMap.getLevel(), 6);
+    window.mainMap.setLevel(targetLevel, { animate: { duration: 400 } });
+    window.mainMap.panTo(pos);
+  };
 
   window.addFromPopup = async function(placeKey) {
     const day = document.getElementById(`popup-sel-${placeKey}`).value;
@@ -658,6 +682,7 @@ renderExploreList();
             </div>
             <div class="note">${item.place.desc}</div>
             ${item.place.url ? `<a href="${item.place.url}" target="_blank" class="popup-naver-link">📍 네이버 지도</a>` : ''}
+            <a href="${window.kakaoNavLink(item.place.name, item.place.lat, item.place.lng)}" target="_blank" class="nav-link">🧭 길찾기</a>
           </div>
         `;
       });
@@ -717,8 +742,17 @@ renderExploreList();
   };
 
   window.drawExploreMarkers = function() {
+    // 마커를 다시 그리기 전, 열려있던 팝업이 있으면 먼저 닫기 (꺼진 장소의 팝업이 남아있는 버그 방지)
+    if (window.lastInfoWindow) {
+      window.lastInfoWindow.close();
+      window.lastInfoWindow = null;
+    }
+
     Object.values(window.exploreMarkers).forEach(m => m.setMap(null));
+    Object.values(window.exploreLabels).forEach(l => l.setMap(null));
     window.exploreMarkers = {};
+    window.exploreLabels = {};
+    window.exploreInfoWindows = {};
 
     window.activeExploreKeys.forEach(key => {
       const p = ALL_PLACES[key];
@@ -731,6 +765,17 @@ renderExploreList();
         image: makeDotImage(pal.pin || pal.text)
       });
       marker.setMap(window.mainMap);
+
+      // 작은 지명 라벨 (메인 일정 마커 글자보다 작게)
+      const labelOverlay = new kakao.maps.CustomOverlay({
+        position: new kakao.maps.LatLng(p.lat, p.lng),
+        content: `<div style="margin-top:15px; font-size:10.5px; font-weight:700; color:#3A352F; background:rgba(255,255,255,0.88); padding:1px 6px; border-radius:5px; white-space:nowrap; box-shadow:0 1px 3px rgba(0,0,0,0.15); pointer-events:none;">${p.name}</div>`,
+        xAnchor: 0.5,
+        yAnchor: 0,
+        zIndex: 1
+      });
+      labelOverlay.setMap(window.mainMap);
+      window.exploreLabels[key] = labelOverlay;
 
       const popupHtml = `
         <div class="popup-content">
@@ -747,6 +792,7 @@ renderExploreList();
             <button class="popup-btn" onclick="window.addFromPopup('${key}')">추가</button>
           </div>
           ${p.url ? `<a href="${p.url}" target="_blank" class="popup-naver-link">📍 네이버 지도에서 보기</a>` : ''}
+          <a href="${window.kakaoNavLink(p.name, p.lat, p.lng)}" target="_blank" class="nav-link">🧭 길찾기 (카카오내비)</a>
         </div>
       `;
       const infowindow = new kakao.maps.InfoWindow({ content: `<div style="padding:10px;">${popupHtml}</div>`, removable: true });
@@ -758,6 +804,7 @@ renderExploreList();
       });
 
       window.exploreMarkers[key] = marker;
+      window.exploreInfoWindows[key] = infowindow;
     });
   };
 
