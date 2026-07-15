@@ -141,6 +141,15 @@
   .place-card .name-wrap { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
   .place-card .name { font-size: 16px; font-weight: 800; color: var(--ink); }
   .place-card .category { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+  .card-delete-btn { background: none; border: none; color: rgba(35,36,31,0.35); font-size: 13px; cursor: pointer; padding: 2px 4px; margin-left: auto; }
+  .card-delete-btn:hover { color: #E35E34; }
+
+  .hidden-restore-wrap { margin-top: 8px; padding-top: 14px; border-top: 1px dashed var(--line); text-align: center; }
+  .hidden-toggle-link { font-size: 12.5px; font-weight: 700; color: rgba(35,36,31,0.45); text-decoration: none; cursor: pointer; }
+  .hidden-toggle-link:hover { color: var(--pine); }
+  .hidden-list { margin-top: 10px; text-align: left; }
+  .hidden-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #FAFAFA; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 6px; font-size: 13px; color: rgba(35,36,31,0.6); }
+  .restore-btn { background: var(--teal-soft); color: var(--teal); border: none; padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; cursor: pointer; }
   .place-card .desc { font-size: 13px; color: rgba(35,36,31,0.72); line-height: 1.4; margin: 0; }
 
   .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
@@ -191,6 +200,8 @@
   .map-search-result-item .r-addr { font-size: 11.5px; color: rgba(35,36,31,0.55); margin-top: 2px; }
   .map-search-result-item.starred { background: #FFFBF0; }
   .map-search-result-item.starred .r-name { color: var(--tangerine-deep); }
+  .map-search-result-item.hidden-match { background: #F4F4F2; }
+  .map-search-result-item.hidden-match .r-name { color: rgba(35,36,31,0.5); }
   .search-group-label { padding: 8px 14px 4px; font-size: 11px; font-weight: 800; color: rgba(35,36,31,0.45); background: #FAFAFA; }
 
   .map-expand-btn {
@@ -430,6 +441,7 @@ function renderExploreList() {
 
   Object.keys(ALL_PLACES).forEach(key => {
     const place = ALL_PLACES[key];
+    if (window.hiddenPlaceKeys && window.hiddenPlaceKeys.has(key)) return;
     if (!activeCats.includes('all') && !activeCats.includes(place.category)) return;
     if (searchQuery && !(place.name.toLowerCase().includes(searchQuery) || place.desc.toLowerCase().includes(searchQuery))) return;
 
@@ -442,6 +454,7 @@ function renderExploreList() {
           <div class="name-wrap">
             <span class="name">${place.name}</span>
             <span class="category" style="background:${pal.bg}; color:${pal.text};">${place.category}</span>
+            <button class="card-delete-btn" onclick="window.hidePlace('${key}', '${place.name.replace(/'/g, "\\'")}')">✕</button>
           </div>
           <p class="desc">${place.desc}</p>
           ${place.url ? `<a href="${place.url}" target="_blank" class="popup-naver-link">📍 네이버 지도에서 보기</a>` : ''}
@@ -454,6 +467,41 @@ function renderExploreList() {
       </div>
     `;
   });
+
+  // 숨긴 장소가 있으면, 리스트 맨 아래에 복원 링크 표시
+  const hiddenKeys = window.hiddenPlaceKeys ? Array.from(window.hiddenPlaceKeys) : [];
+  if (hiddenKeys.length > 0) {
+    wrapper.innerHTML += `
+      <div class="hidden-restore-wrap">
+        <a href="#" class="hidden-toggle-link" id="hidden-toggle-link">숨긴 장소 ${hiddenKeys.length}개 보기 ↓</a>
+        <div class="hidden-list" id="hidden-list" style="display:none;"></div>
+      </div>
+    `;
+  }
+
+  const hiddenToggleLink = document.getElementById('hidden-toggle-link');
+  if (hiddenToggleLink) {
+    hiddenToggleLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const listEl = document.getElementById('hidden-list');
+      const isOpen = listEl.style.display !== 'none';
+      if (isOpen) {
+        listEl.style.display = 'none';
+        hiddenToggleLink.textContent = `숨긴 장소 ${hiddenKeys.length}개 보기 ↓`;
+      } else {
+        listEl.innerHTML = hiddenKeys.map(k => {
+          const p = ALL_PLACES[k];
+          const nm = p ? p.name : k;
+          return `<div class="hidden-item"><span>${nm}</span><button class="restore-btn" data-key="${k}">복원</button></div>`;
+        }).join('');
+        listEl.style.display = 'block';
+        hiddenToggleLink.textContent = `숨긴 장소 접기 ↑`;
+        listEl.querySelectorAll('.restore-btn').forEach(btn => {
+          btn.addEventListener('click', () => window.restorePlace(btn.dataset.key));
+        });
+      }
+    });
+  }
 
   document.querySelectorAll('.toggle-map-btn').forEach(btn => {
     btn.addEventListener('change', (e) => {
@@ -796,17 +844,52 @@ renderExploreList();
     document.getElementById('btn-schedule').click();
   };
 
-  // 저장된 커스텀 장소들을 실시간으로 ALL_PLACES에 병합
+  window.hidePlace = async function(key, name) {
+    if (!confirm(`"${name}"을(를) 리스트에서 숨길까요?\n지도/일정에서도 안 보이게 되고, 나중에 리스트 맨 아래에서 복원할 수 있어요.`)) return;
+    await setDoc(doc(db, "hidden_places", key), { name, hiddenAt: Date.now() });
+  };
+
+  window.restorePlace = async function(key) {
+    await deleteDoc(doc(db, "hidden_places", key));
+  };
+
+  window.hiddenPlaceKeys = new Set();
+  onSnapshot(collection(db, "hidden_places"), (snapshot) => {
+    const newHidden = new Set();
+    snapshot.forEach(docSnap => newHidden.add(docSnap.id));
+    window.hiddenPlaceKeys = newHidden;
+    newHidden.forEach(id => window.activeExploreKeys.delete(id));
+    renderExploreList();
+    window.drawExploreMarkers();
+    if (typeof rebuildScheduleTemp === 'function') rebuildScheduleTemp();
+  });
+
+  // 저장된 커스텀 장소들을 실시간으로 ALL_PLACES에 병합 (추가/수정/삭제 모두 반영)
+  let knownCustomKeys = new Set();
   onSnapshot(collection(db, "custom_places"), (snapshot) => {
     let changed = false;
+    const currentKeys = new Set();
+
     snapshot.forEach(docSnap => {
       const id = docSnap.id;
       const data = docSnap.data();
+      currentKeys.add(id);
       if (!ALL_PLACES[id] || ALL_PLACES[id].name !== data.name) {
         ALL_PLACES[id] = data;
         changed = true;
       }
     });
+
+    // 이전엔 있었는데 이번엔 스냅샷에 없는 것 = 삭제된 것
+    knownCustomKeys.forEach(id => {
+      if (!currentKeys.has(id)) {
+        delete ALL_PLACES[id];
+        window.activeExploreKeys.delete(id);
+        changed = true;
+      }
+    });
+    knownCustomKeys = currentKeys;
+
     if (changed) {
       renderExploreList();
       window.drawExploreMarkers();
@@ -851,10 +934,14 @@ renderExploreList();
 
     // 1) 내 리스트(ALL_PLACES: 기존 37개 + Firestore 저장분)에서 먼저 매칭
     const kw = keyword.toLowerCase();
-    const starredKeys = Object.keys(ALL_PLACES).filter(k => k !== 'p_base' && ALL_PLACES[k].name.toLowerCase().includes(kw));
-    const starredHtml = starredKeys.length ? `
+    const matchedKeys = Object.keys(ALL_PLACES).filter(k => k !== 'p_base' && ALL_PLACES[k].name.toLowerCase().includes(kw));
+    const hiddenSet = window.hiddenPlaceKeys || new Set();
+    const visibleMatches = matchedKeys.filter(k => !hiddenSet.has(k));
+    const hiddenMatches = matchedKeys.filter(k => hiddenSet.has(k));
+
+    const starredHtml = visibleMatches.length ? `
       <div class="search-group-label">⭐ 내 리스트에 있어요</div>
-      ${starredKeys.map(k => `
+      ${visibleMatches.map(k => `
         <div class="map-search-result-item starred" data-star-key="${k}">
           <div class="r-name">⭐ ${ALL_PLACES[k].name}</div>
           <div class="r-addr">${ALL_PLACES[k].category}</div>
@@ -862,8 +949,18 @@ renderExploreList();
       `).join('')}
     ` : '';
 
+    const hiddenHtml = hiddenMatches.length ? `
+      <div class="search-group-label">🙈 숨긴 장소예요 (눌러서 복원)</div>
+      ${hiddenMatches.map(k => `
+        <div class="map-search-result-item hidden-match" data-restore-key="${k}">
+          <div class="r-name">🙈 ${ALL_PLACES[k].name}</div>
+          <div class="r-addr">${ALL_PLACES[k].category} · 눌러서 복원하기</div>
+        </div>
+      `).join('')}
+    ` : '';
+
     // 먼저 "내 리스트" 결과만 즉시 표시, 카카오 검색 결과는 도착하는 대로 아래에 이어붙임
-    mapSearchResults.innerHTML = starredHtml + `<div id="kakao-search-group"><div class="map-search-result-item" style="color:#999;">검색 중...</div></div>`;
+    mapSearchResults.innerHTML = starredHtml + hiddenHtml + `<div id="kakao-search-group"><div class="map-search-result-item" style="color:#999;">검색 중...</div></div>`;
     mapSearchResults.classList.add('show');
     bindStarredClicks();
 
@@ -900,6 +997,13 @@ renderExploreList();
       mapSearchResults.querySelectorAll('.map-search-result-item[data-star-key]').forEach(el => {
         el.addEventListener('click', () => {
           window.activateStarredPlace(el.dataset.starKey);
+          mapSearchResults.classList.remove('show');
+          mapSearchInput.value = '';
+        });
+      });
+      mapSearchResults.querySelectorAll('.map-search-result-item[data-restore-key]').forEach(el => {
+        el.addEventListener('click', () => {
+          window.restorePlace(el.dataset.restoreKey);
           mapSearchResults.classList.remove('show');
           mapSearchInput.value = '';
         });
