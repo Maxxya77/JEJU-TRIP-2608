@@ -582,7 +582,7 @@ renderExploreList();
   // 장소 탐색에서 스위치를 켰을 때, 지도를 그 위치로 약간 확대하며 이동
   window.flyToPlace = function(lat, lng) {
     const pos = new kakao.maps.LatLng(lat, lng);
-    const targetLevel = Math.min(window.mainMap.getLevel(), 6);
+    const targetLevel = Math.min(window.mainMap.getLevel(), 8);
     window.mainMap.setLevel(targetLevel, { animate: { duration: 400 } });
     window.mainMap.panTo(pos);
   };
