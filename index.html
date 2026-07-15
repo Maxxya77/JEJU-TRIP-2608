@@ -179,8 +179,7 @@
     .inner-content { padding: 20px 16px 60px; }
   }
 </style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=4955b7601b5308d5f68f0b45c264ca8f&libraries=services"></script>
 </head>
 <body>
 
@@ -545,22 +544,31 @@ renderExploreList();
   });
 
   // -----------------------------------------------------
-  // B. 지도 초기화 
+  // B. 지도 초기화 (카카오맵)
   // -----------------------------------------------------
-  window.mainMap = L.map('jejumap', { scrollWheelZoom: true, zoomControl: true }).setView([33.36, 126.52], 10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(window.mainMap);
-  
-  window.dayLayers = {};
-  window.exploreLayerGroup = L.layerGroup().addTo(window.mainMap);
-  window.exploreMarkers = {};
+  window.mainMap = new kakao.maps.Map(document.getElementById('jejumap'), {
+    center: new kakao.maps.LatLng(33.36, 126.52),
+    level: 10
+  });
+  window.mainMap.setZoomable(true);
+
+  window.dayLayers = {};       // { d1: { polyline, overlays: [] }, ... }
+  window.exploreMarkers = {};  // { placeKey: kakao.maps.Marker }
+  window.lastInfoWindow = null;
   const DAY_COLORS = { d1: '#E37B34', d2: '#1C6E74', d3: '#2A6FA8', d4: '#5A7350', d5: '#8B4B6B' };
+
+  function makeDotImage(color) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"><circle cx="11" cy="11" r="8" fill="${color}" stroke="white" stroke-width="2.5"/></svg>`;
+    const url = 'data:image/svg+xml;base64,' + btoa(svg);
+    return new kakao.maps.MarkerImage(url, new kakao.maps.Size(22, 22), { offset: new kakao.maps.Point(11, 11) });
+  }
 
   window.addFromPopup = async function(placeKey) {
     const day = document.getElementById(`popup-sel-${placeKey}`).value;
     if(!day) return;
     await addDoc(collection(db, "trip_schedule_v6"), { day: day, placeId: placeKey, time: "", order: Date.now() });
     alert(`${ALL_PLACES[placeKey].name}이(가) 일정에 추가되었습니다!`);
-    window.mainMap.closePopup();
+    if (window.lastInfoWindow) window.lastInfoWindow.close();
     document.getElementById('btn-schedule').click();
   };
 
@@ -658,10 +666,14 @@ renderExploreList();
   }
 
   // -----------------------------------------------------
-  // D. 지도 렌더링 (컬러 팔레트 연동!)
+  // D. 지도 렌더링 (카카오맵, 컬러 팔레트 연동)
   // -----------------------------------------------------
   window.drawScheduleLayers = function() {
-    Object.keys(window.dayLayers).forEach(k => window.mainMap.removeLayer(window.dayLayers[k]));
+    Object.keys(window.dayLayers).forEach(k => {
+      const layer = window.dayLayers[k];
+      if (layer.polyline) layer.polyline.setMap(null);
+      layer.overlays.forEach(o => o.setMap(null));
+    });
     window.dayLayers = {};
 
     ['d1', 'd2', 'd3', 'd4', 'd5'].forEach(day => {
@@ -671,27 +683,41 @@ renderExploreList();
       const places = window.currentScheduleDocs[day];
       if (!places || places.length === 0) return;
 
-      const layerGroup = L.layerGroup().addTo(window.mainMap);
-      const latlngs = places.map(p => [p.place.lat, p.place.lng]);
-      
-      L.polyline(latlngs, { color: DAY_COLORS[day], weight: 3, dashArray: '6 6', opacity: 0.8 }).addTo(layerGroup);
-      
-      places.forEach((p, i) => {
+      const latlngs = places.map(p => new kakao.maps.LatLng(p.place.lat, p.place.lng));
+
+      const polyline = new kakao.maps.Polyline({
+        path: latlngs,
+        strokeWeight: 3,
+        strokeColor: DAY_COLORS[day],
+        strokeOpacity: 0.8,
+        strokeStyle: 'shortdash'
+      });
+      polyline.setMap(window.mainMap);
+
+      const overlays = places.map((p, i) => {
         const iconHtml = `
           <div style="position:relative; font-family:sans-serif;">
             <div style="position:absolute; left:-14px; top:-14px; width:28px; height:28px; background:${DAY_COLORS[day]}; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; border:2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index:2;">${i + 1}</div>
             <div style="position:absolute; left:16px; top:-12px; background:rgba(255,255,255,0.95); border:1.5px solid ${DAY_COLORS[day]}; color:#222; padding:3px 8px; border-radius:6px; font-size:12.5px; font-weight:700; white-space:nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index:1;">${p.place.name}</div>
           </div>
         `;
-        const icon = L.divIcon({ className: '', html: iconHtml, iconSize: [0, 0], iconAnchor: [0, 0] });
-        L.marker([p.place.lat, p.place.lng], { icon }).addTo(layerGroup);
+        const overlay = new kakao.maps.CustomOverlay({
+          position: new kakao.maps.LatLng(p.place.lat, p.place.lng),
+          content: iconHtml,
+          xAnchor: 0,
+          yAnchor: 0,
+          zIndex: 2
+        });
+        overlay.setMap(window.mainMap);
+        return overlay;
       });
-      window.dayLayers[day] = layerGroup;
+
+      window.dayLayers[day] = { polyline, overlays };
     });
   };
 
   window.drawExploreMarkers = function() {
-    window.exploreLayerGroup.clearLayers();
+    Object.values(window.exploreMarkers).forEach(m => m.setMap(null));
     window.exploreMarkers = {};
 
     window.activeExploreKeys.forEach(key => {
@@ -700,10 +726,11 @@ renderExploreList();
 
       const pal = CAT_PALETTE[p.category] || { text: "#555", pin: "#888" };
 
-      const mMarker = L.circleMarker([p.lat, p.lng], { 
-        radius: 8, color: pal.text, 
-        fillColor: pal.pin, fillOpacity: 0.9 
+      const marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(p.lat, p.lng),
+        image: makeDotImage(pal.pin || pal.text)
       });
+      marker.setMap(window.mainMap);
 
       const popupHtml = `
         <div class="popup-content">
@@ -722,9 +749,15 @@ renderExploreList();
           ${p.url ? `<a href="${p.url}" target="_blank" class="popup-naver-link">📍 네이버 지도에서 보기</a>` : ''}
         </div>
       `;
-      mMarker.bindPopup(popupHtml, { minWidth: 180 });
-      window.exploreLayerGroup.addLayer(mMarker);
-      window.exploreMarkers[key] = mMarker;
+      const infowindow = new kakao.maps.InfoWindow({ content: `<div style="padding:10px;">${popupHtml}</div>`, removable: true });
+
+      kakao.maps.event.addListener(marker, 'click', () => {
+        if (window.lastInfoWindow) window.lastInfoWindow.close();
+        infowindow.open(window.mainMap, marker);
+        window.lastInfoWindow = infowindow;
+      });
+
+      window.exploreMarkers[key] = marker;
     });
   };
 
