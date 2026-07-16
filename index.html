@@ -1490,16 +1490,29 @@ if ('serviceWorker' in navigator) {
       chip.style.borderColor = color;
       window.activeCategoryCode = code;
       clearCategoryMarkers();
-
-      placesService.categorySearch(code, (data, status) => {
-        if (status !== kakao.maps.services.Status.OK) return;
-        renderCategoryMarkers(data, color);
-      }, { useMapBounds: true });
+      searchCategoryAllPages(code, color);
     });
   });
 
+  const MAX_CATEGORY_PAGES = 3; // 페이지당 최대 15개 x 3 = 최대 약 45개
+
+  function searchCategoryAllPages(code, color) {
+    let allResults = [];
+    let pageCount = 0;
+    placesService.categorySearch(code, (data, status, pagination) => {
+      if (status !== kakao.maps.services.Status.OK) return;
+      allResults = allResults.concat(data);
+      pageCount++;
+      if (pagination && pagination.hasNextPage && pageCount < MAX_CATEGORY_PAGES) {
+        pagination.nextPage();
+      } else {
+        renderCategoryMarkers(allResults, color);
+      }
+    }, { useMapBounds: true });
+  }
+
   function renderCategoryMarkers(data, color) {
-    data.slice(0, 15).forEach(place => {
+    data.forEach(place => {
       const marker = new kakao.maps.Marker({
         position: new kakao.maps.LatLng(place.y, place.x),
         image: makeSmallDotImage(color)
@@ -1529,10 +1542,7 @@ if ('serviceWorker' in navigator) {
     const chip = document.querySelector(`.cat-chip[data-code="${code}"]`);
     const color = chip ? chip.dataset.color : '#888';
     clearCategoryMarkers();
-    placesService.categorySearch(code, (data, status) => {
-      if (status !== kakao.maps.services.Status.OK) return;
-      renderCategoryMarkers(data, color);
-    }, { useMapBounds: true });
+    searchCategoryAllPages(code, color);
   });
 
   // -----------------------------------------------------
