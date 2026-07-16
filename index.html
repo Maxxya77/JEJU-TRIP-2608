@@ -187,6 +187,31 @@
   }
   .app-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ---------- 홈 화면 추가 안내 배너 (iOS) / 설치 버튼 (Android) ---------- */
+  .install-banner {
+    position: fixed; left: 12px; right: 12px; bottom: 16px;
+    background: var(--pine); color: var(--sand);
+    border-radius: 16px; padding: 14px 16px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+    z-index: 6000; display: none;
+    font-family: 'Pretendard', sans-serif;
+    align-items: center; gap: 12px;
+  }
+  .install-banner.show { display: flex; }
+  .install-banner .ib-icon { font-size: 26px; flex-shrink: 0; }
+  .install-banner .ib-text { flex: 1; font-size: 13px; line-height: 1.4; }
+  .install-banner .ib-text b { color: var(--tangerine); }
+  .install-banner .ib-close {
+    background: rgba(245,239,225,0.15); border: none; color: var(--sand);
+    width: 26px; height: 26px; border-radius: 50%; font-size: 14px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .install-btn {
+    background: var(--tangerine); color: white; border: none;
+    padding: 8px 14px; border-radius: 999px; font-weight: 800;
+    font-size: 12.5px; cursor: pointer; flex-shrink: 0; white-space: nowrap;
+  }
+
   .hidden-restore-wrap { margin-top: 8px; padding-top: 14px; border-top: 1px dashed var(--line); text-align: center; }
   .hidden-toggle-link { font-size: 12.5px; font-weight: 700; color: rgba(35,36,31,0.45); text-decoration: none; cursor: pointer; }
   .hidden-toggle-link:hover { color: var(--pine); }
@@ -791,6 +816,56 @@ renderExploreList();
   } catch (e) {
     console.error('날씨 정보를 불러오지 못했어요:', e);
   }
+})();
+
+// --- 서비스 워커 등록 (안드로이드 설치 프롬프트 활성화용) ---
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// --- 홈 화면 추가 안내 (iOS 배너 / 안드로이드 설치 버튼) ---
+(function setupInstallPrompt() {
+  const banner = document.getElementById('install-banner');
+  const textEl = document.getElementById('install-banner-text');
+  const closeBtn = document.getElementById('install-banner-close');
+
+  const isStandalone = window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+  if (isStandalone) return; // 이미 홈 화면에서 열었으면 아무것도 안 함
+
+  if (localStorage.getItem('installBannerDismissed') === '1') return;
+
+  closeBtn.addEventListener('click', () => {
+    banner.classList.remove('show');
+    localStorage.setItem('installBannerDismissed', '1');
+  });
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  if (isIOS) {
+    textEl.innerHTML = '아래 <b>공유 버튼(⬆️)</b> → <b>"홈 화면에 추가"</b>를 누르면 앱처럼 바로 열 수 있어요!';
+    setTimeout(() => banner.classList.add('show'), 1200);
+    return;
+  }
+
+  // 안드로이드: 브라우저가 설치 가능하다고 판단하면 beforeinstallprompt 이벤트가 옴
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    textEl.innerHTML = '이 버튼을 누르면 <b>홈 화면에 바로 설치</b>돼요!';
+    const installBtn = document.createElement('button');
+    installBtn.className = 'install-btn';
+    installBtn.textContent = '설치하기';
+    installBtn.addEventListener('click', async () => {
+      banner.classList.remove('show');
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+    });
+    banner.insertBefore(installBtn, closeBtn);
+    setTimeout(() => banner.classList.add('show'), 1200);
+  });
 })();
 </script>
 
@@ -1444,6 +1519,12 @@ renderExploreList();
   });
 
 </script>
+
+<div id="install-banner" class="install-banner">
+  <span class="ib-icon">📲</span>
+  <span class="ib-text" id="install-banner-text"></span>
+  <button class="ib-close" id="install-banner-close">✕</button>
+</div>
 
 </body>
 </html>
