@@ -162,6 +162,15 @@
   
   .stop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
   .time-input { width: 90px; padding: 6px 8px; border: 1.5px dashed var(--day-accent); border-radius: 6px; font-family: inherit; font-size: 13.5px; font-weight: 800; color: var(--day-accent); text-align: center; background: #fff; outline: none; transition: all 0.2s; }
+
+  .stop-memo-input {
+    display: block; width: 100%; margin-top: 8px; padding: 7px 10px;
+    border: 1px dashed var(--line); border-radius: 8px;
+    font-family: inherit; font-size: 12.5px; color: rgba(35,36,31,0.75);
+    background: #FAFAFA; outline: none; box-sizing: border-box;
+  }
+  .stop-memo-input:focus { border-color: var(--day-accent); background: white; }
+  .stop-memo-input::placeholder { color: rgba(35,36,31,0.35); }
   .time-input:focus { border-color: var(--day-accent); background: #FFF9F5; border-style: solid; }
   .time-input::placeholder { color: var(--day-accent); opacity: 0.45; font-weight: 600; }
 
@@ -973,7 +982,7 @@ if ('serviceWorker' in navigator) {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, query, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBEUkwBCFv0ICfJ92AG_zK6Xkazx4ejchE",
@@ -986,6 +995,12 @@ if ('serviceWorker' in navigator) {
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+  // 오프라인 캐싱: 인터넷이 끊겨도 마지막으로 불러온 데이터를 그대로 볼 수 있게 함
+  enableIndexedDbPersistence(db).catch((err) => {
+    // 탭을 여러 개 열어둔 경우(failed-precondition)나 브라우저 미지원(unimplemented)이면 그냥 무시하고 온라인 모드로 동작
+    console.warn('오프라인 캐싱을 켤 수 없어요:', err.code);
+  });
 
   // -----------------------------------------------------
   // 0. 신원 확인 (최초 1회) + 마지막 접속 표시 (presence)
@@ -1442,6 +1457,28 @@ if ('serviceWorker' in navigator) {
     }
   });
 
+  // 엔터 누르면 지도에 마커로 뿌려주는 모드 (카테고리 검색과 같은 방식)
+  mapSearchInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const keyword = mapSearchInput.value.trim();
+    if (!keyword) return;
+
+    mapSearchResults.classList.remove('show');
+    mapSearchInput.blur();
+
+    // 카테고리 칩이 켜져있으면 끄기 (서로 배타적으로 동작)
+    document.querySelectorAll('.cat-chip').forEach(c => {
+      c.classList.remove('on');
+      c.style.background = '';
+      c.style.borderColor = '';
+    });
+    window.activeCategoryCode = null;
+    window.activeKeywordSearch = keyword;
+
+    clearCategoryMarkers();
+    searchKeywordAllPages(keyword);
+  });
+
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.map-search-wrap')) {
       mapSearchResults.classList.remove('show');
@@ -1459,6 +1496,7 @@ if ('serviceWorker' in navigator) {
 
   window.categoryMarkers = [];
   window.activeCategoryCode = null;
+  window.activeKeywordSearch = null;
 
   function clearCategoryMarkers() {
     window.categoryMarkers.forEach(m => m.setMap(null));
@@ -1489,6 +1527,7 @@ if ('serviceWorker' in navigator) {
       chip.style.background = color;
       chip.style.borderColor = color;
       window.activeCategoryCode = code;
+      window.activeKeywordSearch = null;
       clearCategoryMarkers();
       searchCategoryAllPages(code, color);
     });
@@ -1509,6 +1548,23 @@ if ('serviceWorker' in navigator) {
         renderCategoryMarkers(allResults, color);
       }
     }, { useMapBounds: true });
+  }
+
+  const KEYWORD_MARKER_COLOR = '#C4611F';
+
+  function searchKeywordAllPages(keyword) {
+    let allResults = [];
+    let pageCount = 0;
+    placesService.keywordSearch(keyword, (data, status, pagination) => {
+      if (status !== kakao.maps.services.Status.OK) return;
+      allResults = allResults.concat(data);
+      pageCount++;
+      if (pagination && pagination.hasNextPage && pageCount < MAX_CATEGORY_PAGES) {
+        pagination.nextPage();
+      } else {
+        renderCategoryMarkers(allResults, KEYWORD_MARKER_COLOR);
+      }
+    }, { bounds: window.mainMap.getBounds() });
   }
 
   function renderCategoryMarkers(data, color) {
@@ -1535,8 +1591,13 @@ if ('serviceWorker' in navigator) {
     });
   }
 
-  // 지도를 옮기거나 확대/축소하면, 켜져있는 카테고리 결과를 현재 화면 기준으로 다시 검색
+  // 지도를 옮기거나 확대/축소하면, 켜져있는 카테고리/키워드 검색 결과를 현재 화면 기준으로 다시 검색
   kakao.maps.event.addListener(window.mainMap, 'idle', () => {
+    if (window.activeKeywordSearch) {
+      clearCategoryMarkers();
+      searchKeywordAllPages(window.activeKeywordSearch);
+      return;
+    }
     if (!window.activeCategoryCode) return;
     const code = window.activeCategoryCode;
     const chip = document.querySelector(`.cat-chip[data-code="${code}"]`);
@@ -1569,6 +1630,7 @@ if ('serviceWorker' in navigator) {
     await deleteDoc(doc(db, "trip_schedule_v6", docId));
   };
   window.updateTime = async function(docId, newTime) { await updateDoc(doc(db, "trip_schedule_v6", docId), { time: newTime }); };
+  window.updateMemo = async function(docId, newMemo) { await updateDoc(doc(db, "trip_schedule_v6", docId), { memo: newMemo }); };
   window.moveItem = async function(day, index, direction) {
     const list = window.currentScheduleDocs[day];
     const targetIndex = index + direction;
@@ -1639,6 +1701,9 @@ if ('serviceWorker' in navigator) {
             <div class="note">${item.place.desc}</div>
             ${item.place.url ? `<a href="${item.place.url}" target="_blank" class="popup-naver-link">📍 네이버 지도</a>` : ''}
             <a href="${window.kakaoNavLink(item.place.name, item.place.lat, item.place.lng)}" target="_blank" class="nav-link">🧭 길찾기</a>
+            <input type="text" class="stop-memo-input" placeholder="💬 메모 남기기 (승현/소영 둘 다 보여요)" value="${(item.memo || '').replace(/"/g, '&quot;')}"
+                   onblur="window.updateMemo('${item.id}', this.value)"
+                   onkeydown="if(event.key==='Enter') this.blur();">
           </div>
         `;
       });
