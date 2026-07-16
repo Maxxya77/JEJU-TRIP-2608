@@ -342,6 +342,7 @@
   .link-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
   .popup-naver-link { display: block; margin-top: 8px; font-size: 12.5px; font-weight: 700; color: var(--teal); text-decoration: none; border-bottom: 1.5px dashed var(--teal); }
   .nav-link { display: block; margin-top: 6px; font-size: 12.5px; font-weight: 700; color: #3A2929; text-decoration: none; border-bottom: 1.5px dashed #B8860B; }
+  .kakao-detail-link { display: block; margin-top: 8px; font-size: 12px; font-weight: 700; color: #3A2929; text-decoration: none; background: #FEE500; padding: 5px 8px; border-radius: 6px; text-align: center; }
   .link-row > .popup-naver-link, .link-row > .nav-link { display: inline-block; margin-top: 0; }
 
   @media (max-width: 800px) {
@@ -1251,6 +1252,7 @@ if ('serviceWorker' in navigator) {
           <a href="${naverUrl}" target="_blank" class="popup-naver-link">📍 네이버 지도</a>
           <a href="${window.kakaoNavLink(d.place_name, lat, lng)}" target="_blank" class="nav-link">🧭 길찾기</a>
         </div>
+        ${d.place_url ? `<a href="${d.place_url}" target="_blank" class="kakao-detail-link">🗺️ 카카오맵에서 사진·평점 보기</a>` : ''}
       </div>
     `;
     const iw = new kakao.maps.InfoWindow({ content: `<div style="padding:10px;">${popupHtml}</div>`, removable: true });
@@ -1494,20 +1496,34 @@ if ('serviceWorker' in navigator) {
 
       placesService.categorySearch(code, (data, status) => {
         if (status !== kakao.maps.services.Status.OK) return;
-        data.slice(0, 15).forEach(place => {
-          const marker = new kakao.maps.Marker({
-            position: new kakao.maps.LatLng(place.y, place.x),
-            image: makeSmallDotImage(color)
-          });
-          marker.setMap(window.mainMap);
-          kakao.maps.event.addListener(marker, 'click', () => {
-            window.showSearchResultPopup(place);
-          });
-          window.categoryMarkers.push(marker);
-        });
+        renderCategoryMarkers(data, color);
       }, { useMapBounds: true });
     });
   });
+
+  function renderCategoryMarkers(data, color) {
+    data.slice(0, 15).forEach(place => {
+      const marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(place.y, place.x),
+        image: makeSmallDotImage(color)
+      });
+      marker.setMap(window.mainMap);
+      kakao.maps.event.addListener(marker, 'click', () => {
+        window.showSearchResultPopup(place);
+      });
+      window.categoryMarkers.push(marker);
+
+      const label = new kakao.maps.CustomOverlay({
+        position: new kakao.maps.LatLng(place.y, place.x),
+        content: `<div style="margin-top:12px; font-size:10px; font-weight:700; color:#3A352F; background:rgba(255,255,255,0.9); padding:1px 5px; border-radius:4px; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,0.15); pointer-events:none;">${place.place_name}</div>`,
+        xAnchor: 0.5,
+        yAnchor: 0,
+        zIndex: 1
+      });
+      label.setMap(window.mainMap);
+      window.categoryMarkers.push(label);
+    });
+  }
 
   // 지도를 옮기거나 확대/축소하면, 켜져있는 카테고리 결과를 현재 화면 기준으로 다시 검색
   kakao.maps.event.addListener(window.mainMap, 'idle', () => {
@@ -1518,17 +1534,7 @@ if ('serviceWorker' in navigator) {
     clearCategoryMarkers();
     placesService.categorySearch(code, (data, status) => {
       if (status !== kakao.maps.services.Status.OK) return;
-      data.slice(0, 15).forEach(place => {
-        const marker = new kakao.maps.Marker({
-          position: new kakao.maps.LatLng(place.y, place.x),
-          image: makeSmallDotImage(color)
-        });
-        marker.setMap(window.mainMap);
-        kakao.maps.event.addListener(marker, 'click', () => {
-          window.showSearchResultPopup(place);
-        });
-        window.categoryMarkers.push(marker);
-      });
+      renderCategoryMarkers(data, color);
     }, { useMapBounds: true });
   });
 
