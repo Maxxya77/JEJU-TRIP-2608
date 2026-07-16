@@ -88,6 +88,22 @@
     font-size: 11px; font-weight: 800; color: white; background: var(--day-accent);
     padding: 3px 9px; border-radius: 999px; margin-left: 4px; vertical-align: middle;
   }
+  .weather-badge {
+    display: none; align-items: center; gap: 4px; margin-left: 8px;
+    font-size: 12px; font-weight: 700; color: var(--ink);
+    background: #F4F6F8; padding: 3px 10px; border-radius: 999px;
+    border: 1px solid var(--line); cursor: pointer; vertical-align: middle;
+  }
+  .weather-badge:hover { background: #ECECEC; }
+  .weather-placeholder { font-size: 11px; color: rgba(35,36,31,0.4); font-weight: 600; }
+  .weather-detail {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin: 4px 0 14px; padding: 10px 14px;
+    background: #FAFAFA; border: 1px solid var(--line); border-radius: 10px;
+  }
+  .weather-detail .wd-slot { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 52px; font-size: 12px; }
+  .weather-detail .wd-time { font-weight: 700; color: rgba(35,36,31,0.55); font-size: 11px; }
+  .weather-detail .wd-temp { font-weight: 800; }
   .day-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; border-bottom: 2px solid var(--line); padding-bottom: 8px; }
   .day-num { font-size: 28px; font-weight: 800; color: var(--day-accent); line-height: 1; letter-spacing: -0.02em; }
   .day-title { font-size: 17px; font-weight: 800; }
@@ -127,6 +143,9 @@
   .filter-chips .chip[data-category="양식/기타"].on { background: #759668; border-color: #759668; color: white; }
 
   .master-toggle-wrapper { display: flex; justify-content: space-between; align-items: center; background: #FAFAFA; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 16px; }
+  .sort-toggle-wrap { display: flex; gap: 6px; margin-bottom: 14px; }
+  .sort-btn { flex: 1; padding: 8px 0; border-radius: 999px; border: 1.5px solid var(--line); background: white; font-family: inherit; font-size: 12.5px; font-weight: 700; color: rgba(35,36,31,0.5); cursor: pointer; transition: all 0.2s; }
+  .sort-btn.active { background: var(--pine); color: white; border-color: var(--pine); }
   .explore-search-input {
     width: 100%; padding: 12px 14px; margin-bottom: 12px;
     border-radius: 12px; border: 1.5px solid var(--line);
@@ -287,23 +306,28 @@
 
       <div id="view-schedule" class="tab-content active">
         <div class="day-section" id="sec-d1">
-          <div class="day-head"><div class="day-num">01</div><div class="day-title">8/3 (월) · 도착 및 이동<span class="today-badge" id="badge-d1" style="display:none;">오늘</span></div></div>
+          <div class="day-head"><div class="day-num">01</div><div class="day-title">8/3 (월) · 도착 및 이동<span class="today-badge" id="badge-d1" style="display:none;">오늘</span><span class="weather-badge" id="weather-d1" style="display:none;"></span></div></div>
+          <div class="weather-detail" id="weather-detail-d1" style="display:none;"></div>
           <div class="timeline" id="timeline-d1"><div style="color:#888; font-size:13px;">불러오는 중...</div></div>
         </div>
         <div class="day-section" id="sec-d2">
-          <div class="day-head"><div class="day-num">02</div><div class="day-title">8/4 (화) · 자연과 힐링<span class="today-badge" id="badge-d2" style="display:none;">오늘</span></div></div>
+          <div class="day-head"><div class="day-num">02</div><div class="day-title">8/4 (화) · 자연과 힐링<span class="today-badge" id="badge-d2" style="display:none;">오늘</span><span class="weather-badge" id="weather-d2" style="display:none;"></span></div></div>
+          <div class="weather-detail" id="weather-detail-d2" style="display:none;"></div>
           <div class="timeline" id="timeline-d2"></div>
         </div>
         <div class="day-section" id="sec-d3">
-          <div class="day-head"><div class="day-num">03</div><div class="day-title">8/5 (수) · 동부 바다<span class="today-badge" id="badge-d3" style="display:none;">오늘</span></div></div>
+          <div class="day-head"><div class="day-num">03</div><div class="day-title">8/5 (수) · 동부 바다<span class="today-badge" id="badge-d3" style="display:none;">오늘</span><span class="weather-badge" id="weather-d3" style="display:none;"></span></div></div>
+          <div class="weather-detail" id="weather-detail-d3" style="display:none;"></div>
           <div class="timeline" id="timeline-d3"></div>
         </div>
         <div class="day-section" id="sec-d4">
-          <div class="day-head"><div class="day-num">04</div><div class="day-title">8/6 (목) · 서부 탐방<span class="today-badge" id="badge-d4" style="display:none;">오늘</span></div></div>
+          <div class="day-head"><div class="day-num">04</div><div class="day-title">8/6 (목) · 서부 탐방<span class="today-badge" id="badge-d4" style="display:none;">오늘</span><span class="weather-badge" id="weather-d4" style="display:none;"></span></div></div>
+          <div class="weather-detail" id="weather-detail-d4" style="display:none;"></div>
           <div class="timeline" id="timeline-d4"></div>
         </div>
         <div class="day-section" id="sec-d5">
-          <div class="day-head"><div class="day-num">05</div><div class="day-title">8/7 (금) · 마무리 및 출국<span class="today-badge" id="badge-d5" style="display:none;">오늘</span></div></div>
+          <div class="day-head"><div class="day-num">05</div><div class="day-title">8/7 (금) · 마무리 및 출국<span class="today-badge" id="badge-d5" style="display:none;">오늘</span><span class="weather-badge" id="weather-d5" style="display:none;"></span></div></div>
+          <div class="weather-detail" id="weather-detail-d5" style="display:none;"></div>
           <div class="timeline" id="timeline-d5"></div>
         </div>
       </div>
@@ -327,6 +351,11 @@
             <input type="checkbox" id="toggle-all-explore">
             <span class="slider"></span>
           </label>
+        </div>
+
+        <div class="sort-toggle-wrap" id="sort-toggle-wrap">
+          <button class="sort-btn active" data-sort="name">가나다순</button>
+          <button class="sort-btn" data-sort="recent">최근 추가순</button>
         </div>
 
         <div id="explore-wrapper"></div>
@@ -476,12 +505,23 @@ function renderExploreList() {
   const searchEl = document.getElementById('explore-search');
   const searchQuery = (searchEl ? searchEl.value : '').trim().toLowerCase();
 
-  Object.keys(ALL_PLACES).forEach(key => {
+  let matchedKeys = Object.keys(ALL_PLACES).filter(key => {
     const place = ALL_PLACES[key];
-    if (window.hiddenPlaceKeys && window.hiddenPlaceKeys.has(key)) return;
-    if (!activeCats.includes('all') && !activeCats.includes(place.category)) return;
-    if (searchQuery && !(place.name.toLowerCase().includes(searchQuery) || place.desc.toLowerCase().includes(searchQuery))) return;
+    if (window.hiddenPlaceKeys && window.hiddenPlaceKeys.has(key)) return false;
+    if (!activeCats.includes('all') && !activeCats.includes(place.category)) return false;
+    if (searchQuery && !(place.name.toLowerCase().includes(searchQuery) || place.desc.toLowerCase().includes(searchQuery))) return false;
+    return true;
+  });
 
+  const sortMode = window.exploreSortMode || 'name';
+  if (sortMode === 'name') {
+    matchedKeys.sort((a, b) => ALL_PLACES[a].name.localeCompare(ALL_PLACES[b].name, 'ko'));
+  } else if (sortMode === 'recent') {
+    matchedKeys.sort((a, b) => (ALL_PLACES[b].createdAt || 0) - (ALL_PLACES[a].createdAt || 0));
+  }
+
+  matchedKeys.forEach(key => {
+    const place = ALL_PLACES[key];
     const isChecked = window.activeExploreKeys.has(key) ? 'checked' : '';
     const pal = CAT_PALETTE[place.category] || { bg: "#eee", text: "#555", pin: "#888" };
 
@@ -611,6 +651,17 @@ document.getElementById('toggle-all-explore').addEventListener('change', (e) => 
 
 document.getElementById('explore-search').addEventListener('input', renderExploreList);
 
+// --- 정렬 토글 (가나다순 / 최근 추가순) ---
+window.exploreSortMode = 'name';
+document.querySelectorAll('.sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    window.exploreSortMode = btn.dataset.sort;
+    renderExploreList();
+  });
+});
+
 // --- 지도 크게보기 토글 (모바일 전용) ---
 document.getElementById('map-expand-btn').addEventListener('click', (e) => {
   const expanded = document.body.classList.toggle('map-expanded');
@@ -652,6 +703,72 @@ renderExploreList();
   setTimeout(() => {
     if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 300);
+})();
+
+// --- 날씨 (Open-Meteo, API 키 불필요) ---
+(async function loadWeather() {
+  const BASE_LAT = 33.2448, BASE_LNG = 126.5644; // 서귀포 숙소 기준
+  const DAY_DATES = { d1: '2026-08-03', d2: '2026-08-04', d3: '2026-08-05', d4: '2026-08-06', d5: '2026-08-07' };
+  const SLOTS = ['09:00', '12:00', '15:00', '18:00'];
+  const SLOT_LABELS = ['아침', '점심', '오후', '저녁'];
+
+  function weatherEmoji(code) {
+    if (code === 0) return '☀️';
+    if ([1, 2, 3].includes(code)) return '⛅';
+    if ([45, 48].includes(code)) return '🌫️';
+    if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return '🌧️';
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return '❄️';
+    if ([95, 96, 99].includes(code)) return '⛈️';
+    return '🌡️';
+  }
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${BASE_LAT}&longitude=${BASE_LNG}&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Asia%2FSeoul&forecast_days=16`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const dailyDates = data.daily.time;
+    const hourlyTimes = data.hourly.time;
+
+    Object.keys(DAY_DATES).forEach(dayKey => {
+      const dateStr = DAY_DATES[dayKey];
+      const badgeEl = document.getElementById(`weather-${dayKey}`);
+      const detailEl = document.getElementById(`weather-detail-${dayKey}`);
+      if (!badgeEl) return;
+
+      const idx = dailyDates.indexOf(dateStr);
+      if (idx === -1) {
+        badgeEl.innerHTML = `<span class="weather-placeholder">🌤️ 예보 준비 중</span>`;
+        badgeEl.style.display = 'inline-flex';
+        return;
+      }
+
+      const max = Math.round(data.daily.temperature_2m_max[idx]);
+      const min = Math.round(data.daily.temperature_2m_min[idx]);
+      const emoji = weatherEmoji(data.daily.weathercode[idx]);
+
+      badgeEl.innerHTML = `${emoji} ${max}° / ${min}°`;
+      badgeEl.style.display = 'inline-flex';
+
+      let slotHtml = '';
+      SLOTS.forEach((t, i) => {
+        const hIdx = hourlyTimes.indexOf(`${dateStr}T${t}`);
+        if (hIdx === -1) {
+          slotHtml += `<div class="wd-slot"><div class="wd-time">${SLOT_LABELS[i]}</div><div>-</div></div>`;
+        } else {
+          const temp = Math.round(data.hourly.temperature_2m[hIdx]);
+          slotHtml += `<div class="wd-slot"><div class="wd-time">${SLOT_LABELS[i]}</div><div>${weatherEmoji(data.hourly.weathercode[hIdx])}</div><div class="wd-temp">${temp}°</div></div>`;
+        }
+      });
+      if (detailEl) detailEl.innerHTML = slotHtml;
+
+      badgeEl.addEventListener('click', () => {
+        if (!detailEl) return;
+        detailEl.style.display = (detailEl.style.display === 'none' || !detailEl.style.display) ? 'flex' : 'none';
+      });
+    });
+  } catch (e) {
+    console.error('날씨 정보를 불러오지 못했어요:', e);
+  }
 })();
 </script>
 
@@ -832,7 +949,8 @@ renderExploreList();
     window.pendingSearchResults[customKey] = {
       name: d.place_name, lat, lng, category,
       desc: (d.category_name || '카카오맵 검색 결과'),
-      url: naverUrl
+      url: naverUrl,
+      createdAt: Date.now()
     };
 
     const popupHtml = `
