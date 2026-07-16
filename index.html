@@ -149,8 +149,12 @@
     color: rgba(35,36,31,0.4); transition: transform 0.2s; padding-bottom: 8px;
   }
   .day-section.collapsed .day-arrow { transform: rotate(-90deg); }
-  .day-section.collapsed .weather-detail,
-  .day-section.collapsed .timeline { display: none !important; }
+  .day-body {
+    overflow: hidden;
+    max-height: 2000px;
+    transition: max-height 0.35s ease;
+  }
+  .day-section.collapsed .day-body { max-height: 0; }
 
   .timeline { padding-left: 20px; border-left: 2px solid var(--sand-deep); margin-left: 10px; }
   .stop { position: relative; padding-bottom: 22px; transition: opacity 0.3s; }
@@ -293,6 +297,18 @@
   .m-chip.on { background: var(--pine); color: white; border-color: var(--pine); }
 
   .map-search-wrap { position: relative; }
+  .map-category-row {
+    display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .map-category-row::-webkit-scrollbar { display: none; }
+  .cat-chip {
+    flex: 0 0 auto; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px);
+    border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 11px;
+    font-size: 12px; font-weight: 800; color: rgba(35,36,31,0.55); cursor: pointer;
+    white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.2s;
+  }
+  .cat-chip.on { color: white; }
   .map-search-input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); font-family: inherit; font-size: 13.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); background: white; }
   .map-search-input:focus { outline: none; border-color: var(--pine); }
   .map-search-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: white; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.18); max-height: 260px; overflow-y: auto; z-index: 1001; display: none; }
@@ -387,28 +403,38 @@
         </div>
         <div class="day-section" id="sec-d1">
           <div class="day-head"><div class="day-num">01</div><div class="day-title">8/3 (월) · 도착 및 이동<span class="today-badge" id="badge-d1" style="display:none;">오늘</span><span class="weather-badge" id="weather-d1" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
-          <div class="weather-detail" id="weather-detail-d1" style="display:none;"></div>
-          <div class="timeline" id="timeline-d1"><div style="color:#888; font-size:13px;">불러오는 중...</div></div>
+          <div class="day-body">
+            <div class="weather-detail" id="weather-detail-d1" style="display:none;"></div>
+            <div class="timeline" id="timeline-d1"><div style="color:#888; font-size:13px;">불러오는 중...</div></div>
+          </div>
         </div>
         <div class="day-section" id="sec-d2">
           <div class="day-head"><div class="day-num">02</div><div class="day-title">8/4 (화) · 자연과 힐링<span class="today-badge" id="badge-d2" style="display:none;">오늘</span><span class="weather-badge" id="weather-d2" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
-          <div class="weather-detail" id="weather-detail-d2" style="display:none;"></div>
-          <div class="timeline" id="timeline-d2"></div>
+          <div class="day-body">
+            <div class="weather-detail" id="weather-detail-d2" style="display:none;"></div>
+            <div class="timeline" id="timeline-d2"></div>
+          </div>
         </div>
         <div class="day-section" id="sec-d3">
           <div class="day-head"><div class="day-num">03</div><div class="day-title">8/5 (수) · 동부 바다<span class="today-badge" id="badge-d3" style="display:none;">오늘</span><span class="weather-badge" id="weather-d3" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
-          <div class="weather-detail" id="weather-detail-d3" style="display:none;"></div>
-          <div class="timeline" id="timeline-d3"></div>
+          <div class="day-body">
+            <div class="weather-detail" id="weather-detail-d3" style="display:none;"></div>
+            <div class="timeline" id="timeline-d3"></div>
+          </div>
         </div>
         <div class="day-section" id="sec-d4">
           <div class="day-head"><div class="day-num">04</div><div class="day-title">8/6 (목) · 서부 탐방<span class="today-badge" id="badge-d4" style="display:none;">오늘</span><span class="weather-badge" id="weather-d4" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
-          <div class="weather-detail" id="weather-detail-d4" style="display:none;"></div>
-          <div class="timeline" id="timeline-d4"></div>
+          <div class="day-body">
+            <div class="weather-detail" id="weather-detail-d4" style="display:none;"></div>
+            <div class="timeline" id="timeline-d4"></div>
+          </div>
         </div>
         <div class="day-section" id="sec-d5">
           <div class="day-head"><div class="day-num">05</div><div class="day-title">8/7 (금) · 마무리 및 출국<span class="today-badge" id="badge-d5" style="display:none;">오늘</span><span class="weather-badge" id="weather-d5" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
-          <div class="weather-detail" id="weather-detail-d5" style="display:none;"></div>
-          <div class="timeline" id="timeline-d5"></div>
+          <div class="day-body">
+            <div class="weather-detail" id="weather-detail-d5" style="display:none;"></div>
+            <div class="timeline" id="timeline-d5"></div>
+          </div>
         </div>
       </div>
 
@@ -470,6 +496,15 @@
       <div class="map-search-wrap">
         <input type="text" id="map-search-input" class="map-search-input" placeholder="🔍 새로운 장소 검색 (카카오맵)">
         <div id="map-search-results" class="map-search-results"></div>
+      </div>
+      <div class="map-category-row" id="map-category-row">
+        <span class="cat-chip" data-code="FD6" data-color="#E35E34">🍚 음식점</span>
+        <span class="cat-chip" data-code="CE7" data-color="#D48D28">☕ 카페</span>
+        <span class="cat-chip" data-code="AT4" data-color="#1C6E74">🏞️ 명소</span>
+        <span class="cat-chip" data-code="PK6" data-color="#5B7C99">🅿️ 주차장</span>
+        <span class="cat-chip" data-code="OL7" data-color="#3E6FB5">⛽ 주유소</span>
+        <span class="cat-chip" data-code="CS2" data-color="#8E6DAE">🏪 편의점</span>
+        <span class="cat-chip" data-code="PM9" data-color="#3DA65D">💊 약국</span>
       </div>
     </div>
     <button id="map-expand-btn" class="map-expand-btn">🔎 지도 크게보기</button>
@@ -1412,6 +1447,89 @@ if ('serviceWorker' in navigator) {
     if (!e.target.closest('.map-search-wrap')) {
       mapSearchResults.classList.remove('show');
     }
+  });
+
+  // -----------------------------------------------------
+  // B-3. 카테고리 빠른 검색 (음식점/카페/명소/주차장/주유소/편의점/약국)
+  // -----------------------------------------------------
+  function makeSmallDotImage(color, size = 16) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2-2}" fill="${color}" stroke="white" stroke-width="2"/></svg>`;
+    const url = 'data:image/svg+xml;base64,' + btoa(svg);
+    return new kakao.maps.MarkerImage(url, new kakao.maps.Size(size, size), { offset: new kakao.maps.Point(size/2, size/2) });
+  }
+
+  window.categoryMarkers = [];
+  window.activeCategoryCode = null;
+
+  function clearCategoryMarkers() {
+    window.categoryMarkers.forEach(m => m.setMap(null));
+    window.categoryMarkers = [];
+  }
+
+  document.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const code = chip.dataset.code;
+      const color = chip.dataset.color;
+
+      if (window.activeCategoryCode === code) {
+        // 이미 켜진 카테고리를 다시 누르면 끄기
+        chip.classList.remove('on');
+        chip.style.background = '';
+        chip.style.borderColor = '';
+        window.activeCategoryCode = null;
+        clearCategoryMarkers();
+        return;
+      }
+
+      document.querySelectorAll('.cat-chip').forEach(c => {
+        c.classList.remove('on');
+        c.style.background = '';
+        c.style.borderColor = '';
+      });
+      chip.classList.add('on');
+      chip.style.background = color;
+      chip.style.borderColor = color;
+      window.activeCategoryCode = code;
+      clearCategoryMarkers();
+
+      placesService.categorySearch(code, (data, status) => {
+        if (status !== kakao.maps.services.Status.OK) return;
+        data.slice(0, 15).forEach(place => {
+          const marker = new kakao.maps.Marker({
+            position: new kakao.maps.LatLng(place.y, place.x),
+            image: makeSmallDotImage(color)
+          });
+          marker.setMap(window.mainMap);
+          kakao.maps.event.addListener(marker, 'click', () => {
+            window.showSearchResultPopup(place);
+          });
+          window.categoryMarkers.push(marker);
+        });
+      }, { useMapBounds: true, size: 15 });
+    });
+  });
+
+  // 지도를 옮기거나 확대/축소하면, 켜져있는 카테고리 결과를 현재 화면 기준으로 다시 검색
+  kakao.maps.event.addListener(window.mainMap, 'idle', () => {
+    if (!window.activeCategoryCode) return;
+    const code = window.activeCategoryCode;
+    const chip = document.querySelector(`.cat-chip[data-code="${code}"]`);
+    const color = chip ? chip.dataset.color : '#888';
+    clearCategoryMarkers();
+    placesService.categorySearch(code, (data, status) => {
+      if (status !== kakao.maps.services.Status.OK) return;
+      data.slice(0, 15).forEach(place => {
+        const marker = new kakao.maps.Marker({
+          position: new kakao.maps.LatLng(place.y, place.x),
+          image: makeSmallDotImage(color)
+        });
+        marker.setMap(window.mainMap);
+        kakao.maps.event.addListener(marker, 'click', () => {
+          window.showSearchResultPopup(place);
+        });
+        window.categoryMarkers.push(marker);
+      });
+    }, { useMapBounds: true, size: 15 });
   });
 
   // -----------------------------------------------------
