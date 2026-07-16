@@ -144,6 +144,20 @@
   .card-delete-btn { background: none; border: none; color: rgba(35,36,31,0.35); font-size: 13px; cursor: pointer; padding: 2px 4px; margin-left: auto; }
   .card-delete-btn:hover { color: #E35E34; }
 
+  .app-toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: var(--pine); color: var(--sand);
+    padding: 12px 22px; border-radius: 999px;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 13.5px; font-weight: 700;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+    z-index: 5000; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    max-width: 88vw; text-align: center;
+  }
+  .app-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
   .hidden-restore-wrap { margin-top: 8px; padding-top: 14px; border-top: 1px dashed var(--line); text-align: center; }
   .hidden-toggle-link { font-size: 12.5px; font-weight: 700; color: rgba(35,36,31,0.45); text-decoration: none; cursor: pointer; }
   .hidden-toggle-link:hover { color: var(--pine); }
@@ -356,6 +370,25 @@
 // --- 카카오맵 길찾기 링크 헬퍼 ---
 window.kakaoNavLink = function(name, lat, lng) {
   return `https://map.kakao.com/link/to/${encodeURIComponent(name)},${lat},${lng}`;
+};
+
+// --- 토스트 알림 (alert 대신 사용) ---
+window.showToast = function(message) {
+  let toastEl = document.getElementById('app-toast');
+  if (!toastEl) {
+    toastEl = document.createElement('div');
+    toastEl.id = 'app-toast';
+    toastEl.className = 'app-toast';
+    document.body.appendChild(toastEl);
+  }
+  toastEl.textContent = message;
+  toastEl.classList.remove('show');
+  void toastEl.offsetWidth; // 리플로우로 애니메이션 재시작
+  toastEl.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => {
+    toastEl.classList.remove('show');
+  }, 2400);
 };
 
 // --- 데이터 베이스 (사용자 요청 리스트 100% 반영) ---
@@ -736,7 +769,7 @@ renderExploreList();
     const day = document.getElementById(`popup-sel-${placeKey}`).value;
     if(!day) return;
     await addDoc(collection(db, "trip_schedule_v6"), { day: day, placeId: placeKey, time: "", order: Date.now() });
-    alert(`${ALL_PLACES[placeKey].name}이(가) 일정에 추가되었습니다!`);
+    window.showToast(`${ALL_PLACES[placeKey].name}이(가) 일정에 추가되었습니다!`);
     if (window.lastInfoWindow) window.lastInfoWindow.close();
     document.getElementById('btn-schedule').click();
   };
@@ -834,7 +867,7 @@ renderExploreList();
     const data = window.pendingSearchResults[customKey];
     if (!data) return;
     await setDoc(doc(db, "custom_places", customKey), data);
-    alert(`${data.name}이(가) 내 리스트에 저장되었어요! '장소 탐색' 탭에서 확인할 수 있어요.`);
+    window.showToast(`${data.name}이(가) 내 리스트에 저장되었어요!`);
   };
 
   window.addSearchResultToSchedule = async function(customKey) {
@@ -843,7 +876,7 @@ renderExploreList();
     const day = document.getElementById(`popup-sel-${customKey}`).value;
     await setDoc(doc(db, "custom_places", customKey), data); // 일정 참조를 위해 리스트에도 함께 저장
     await addDoc(collection(db, "trip_schedule_v6"), { day, placeId: customKey, time: "", order: Date.now() });
-    alert(`${data.name}이(가) 일정에 추가되었습니다!`);
+    window.showToast(`${data.name}이(가) 일정에 추가되었습니다!`);
     if (window.lastInfoWindow) window.lastInfoWindow.close();
     document.getElementById('btn-schedule').click();
   };
