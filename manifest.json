@@ -1,0 +1,25 @@
+{
+  "name": "제주 4박5일 · 승현 & 소영",
+  "short_name": "제주여행",
+  "description": "제주 4박5일 여행 일정 · 지도 · 준비물 관리",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5EFE1",
+  "theme_color": "#16261F",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
