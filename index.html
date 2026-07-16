@@ -162,6 +162,7 @@
   .filter-chips .chip[data-category="국/찌개 (해장국)"].on { background: #8E6DAE; border-color: #8E6DAE; color: white; }
   .filter-chips .chip[data-category="해산물/향토음식"].on { background: #3D8CDA; border-color: #3D8CDA; color: white; }
   .filter-chips .chip[data-category="양식/기타"].on { background: #759668; border-color: #759668; color: white; }
+  .filter-chips .chip[data-category="돈가스/분식"].on { background: #A6763D; border-color: #A6763D; color: white; }
 
   .master-toggle-wrapper { display: flex; justify-content: space-between; align-items: center; background: #FAFAFA; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 16px; }
   .sort-toggle-wrap { display: flex; align-items: center; gap: 7px; margin-bottom: 14px; font-size: 12.5px; }
@@ -391,6 +392,7 @@
           <span class="chip" data-category="국/찌개 (해장국)">국/찌개 (해장국)</span>
           <span class="chip" data-category="해산물/향토음식">해산물/향토음식</span>
           <span class="chip" data-category="양식/기타">양식/기타</span>
+          <span class="chip" data-category="돈가스/분식">돈가스/분식</span>
         </div>
 
         <input type="text" id="explore-search" class="explore-search-input" placeholder="🔍 장소 이름/설명으로 검색...">
@@ -520,7 +522,7 @@ const ALL_PLACES = {
 
   "f_heukdwaeji_ogyeop": { name: "불타는 흑돼지오겹말이", category: "고기 (흑돼지/소고기)", lat: 33.5138, lng: 126.5295, desc: "동문야시장 명물. 화려한 불쇼와 함께 흑돼지 삼겹살로 김치·채소를 돌돌 말아 구워주는 길거리 요리.", url: "https://map.naver.com/p/search/제주%20동문야시장%20흑돼지오겹말이" },
   "f_samwon_hoe": { name: "동문삼원횟집", category: "해산물/향토음식", lat: 33.5143, lng: 126.5288, desc: "동문시장 안 회 전문점. 매일 신선한 활어회를 2만~5만원대로 저렴하게 즐길 수 있음.", url: "https://map.naver.com/p/search/동문삼원횟집" },
-  "f_oiljang_tteok": { name: "오일장 떡볶이", category: "양식/기타", lat: 33.5140, lng: 126.5299, desc: "동문시장 분식집, 블랙핑크 방문으로 유명. 굵은 가래떡 떡볶이가 시그니처인데 후기상 맵기는 순한 편.", url: "https://map.naver.com/p/search/오일장떡볶이" },
+  "f_oiljang_tteok": { name: "오일장 떡볶이", category: "돈가스/분식", lat: 33.5140, lng: 126.5299, desc: "동문시장 분식집, 블랙핑크 방문으로 유명. 굵은 가래떡 떡볶이가 시그니처인데 후기상 맵기는 순한 편.", url: "https://map.naver.com/p/search/오일장떡볶이" },
 
   "f_gossine": { name: "고씨네천지국수 올레시장본점", category: "국/찌개 (해장국)", lat: 33.2497, lng: 126.5646, desc: "서귀포 올레시장 근처 고기국수 맛집. 뼈육수 대신 멸치육수를 쓴 시그니처 멸고국수가 깔끔하고 자극적이지 않음.", url: "https://map.naver.com/p/search/고씨네천지국수%20올레시장본점" },
   "f_moljil": { name: "몰질 식육식당", category: "양식/기타", lat: 33.2615636, lng: 126.49447, desc: "서귀포 강정동의 독특한 고기짬뽕 전문점. 해물 대신 돼지고기와 채소를 듬뿍 넣어 김치찌개처럼 걸쭉하고 얼큰함.", url: "https://map.naver.com/p/search/몰질식육식당" },
@@ -541,7 +543,8 @@ const CAT_PALETTE = {
   "고기 (흑돼지/소고기)": { bg: "#FCE8E5", text: "#C4321F", pin: "#E34A33" },
   "국/찌개 (해장국)": { bg: "#F0EBF2", text: "#6B5282", pin: "#8E6DAE" },
   "해산물/향토음식": { bg: "#E5F0FA", text: "#2A6FA8", pin: "#3D8CDA" },
-  "양식/기타": { bg: "#EBF0E6", text: "#5A7350", pin: "#759668" }
+  "양식/기타": { bg: "#EBF0E6", text: "#5A7350", pin: "#759668" },
+  "돈가스/분식": { bg: "#F5EBDD", text: "#8A5A26", pin: "#A6763D" }
 };
 
 window.activeExploreKeys = new Set();
@@ -1058,8 +1061,9 @@ if ('serviceWorker' in navigator) {
     const name = kakaoPlace.category_name || '';
     if (code === 'CE7') return '카페/디저트';
     if (code === 'AT4' || code === 'AD5') return '명소/여행지';
-    if (/고기|육류|흑돼지|소고기|돈까스|삼겹살/.test(name)) return '고기 (흑돼지/소고기)';
-    if (/해장국|국밥|찌개|탕|분식/.test(name)) return '국/찌개 (해장국)';
+    if (/돈까스|돈가스|분식|우동|라멘|스시|초밥|일식/.test(name)) return '돈가스/분식';
+    if (/고기|육류|흑돼지|소고기|삼겹살/.test(name)) return '고기 (흑돼지/소고기)';
+    if (/해장국|국밥|찌개|탕/.test(name)) return '국/찌개 (해장국)';
     if (/해산물|수산|향토|횟집|물회|어시장/.test(name)) return '해산물/향토음식';
     if (code === 'FD6') return '양식/기타';
     return '명소/여행지';
