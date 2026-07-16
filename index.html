@@ -973,11 +973,20 @@ if ('serviceWorker' in navigator) {
 
   const presenceLastSeen = { seunghyun: null, soyoung: null };
 
+  const ONLINE_THRESHOLD_MS = 90 * 1000; // 90초 이내 신호면 온라인으로 간주
+
+  function formatPresence(name, ts) {
+    if (ts && (Date.now() - ts) <= ONLINE_THRESHOLD_MS) {
+      return `🟢 ${name} 온라인`;
+    }
+    return `${name} ${relativeTime(ts)}`;
+  }
+
   function renderPresence() {
     const shEl = document.getElementById('presence-seunghyun');
     const syEl = document.getElementById('presence-soyoung');
-    if (shEl) shEl.textContent = `승현 ${relativeTime(presenceLastSeen.seunghyun)}`;
-    if (syEl) syEl.textContent = `소영 ${relativeTime(presenceLastSeen.soyoung)}`;
+    if (shEl) shEl.textContent = formatPresence('승현', presenceLastSeen.seunghyun);
+    if (syEl) syEl.textContent = formatPresence('소영', presenceLastSeen.soyoung);
   }
 
   onSnapshot(presenceRef, (snapshot) => {
