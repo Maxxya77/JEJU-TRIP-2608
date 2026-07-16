@@ -113,9 +113,21 @@
   .weather-detail .wd-slot { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 52px; font-size: 12px; }
   .weather-detail .wd-time { font-weight: 700; color: rgba(35,36,31,0.55); font-size: 11px; }
   .weather-detail .wd-temp { font-weight: 800; }
-  .day-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; border-bottom: 2px solid var(--line); padding-bottom: 8px; }
+  .day-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; border-bottom: 2px solid var(--line); padding-bottom: 8px; cursor: pointer; }
   .day-num { font-size: 28px; font-weight: 800; color: var(--day-accent); line-height: 1; letter-spacing: -0.02em; }
   .day-title { font-size: 17px; font-weight: 800; }
+
+  .schedule-toolbar { display: flex; justify-content: flex-end; margin-bottom: 6px; }
+  .toggle-all-link { font-size: 12.5px; font-weight: 700; color: rgba(35,36,31,0.45); cursor: pointer; }
+  .toggle-all-link:hover { color: var(--pine); }
+
+  .day-arrow {
+    margin-left: auto; flex-shrink: 0; font-size: 13px;
+    color: rgba(35,36,31,0.4); transition: transform 0.2s; padding-bottom: 8px;
+  }
+  .day-section.collapsed .day-arrow { transform: rotate(-90deg); }
+  .day-section.collapsed .weather-detail,
+  .day-section.collapsed .timeline { display: none !important; }
 
   .timeline { padding-left: 20px; border-left: 2px solid var(--sand-deep); margin-left: 10px; }
   .stop { position: relative; padding-bottom: 22px; transition: opacity 0.3s; }
@@ -340,28 +352,31 @@
       </div>
 
       <div id="view-schedule" class="tab-content active">
+        <div class="schedule-toolbar">
+          <span class="toggle-all-link" id="toggle-all-days">전체 펼치기</span>
+        </div>
         <div class="day-section" id="sec-d1">
-          <div class="day-head"><div class="day-num">01</div><div class="day-title">8/3 (월) · 도착 및 이동<span class="today-badge" id="badge-d1" style="display:none;">오늘</span><span class="weather-badge" id="weather-d1" style="display:none;"></span></div></div>
+          <div class="day-head"><div class="day-num">01</div><div class="day-title">8/3 (월) · 도착 및 이동<span class="today-badge" id="badge-d1" style="display:none;">오늘</span><span class="weather-badge" id="weather-d1" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
           <div class="weather-detail" id="weather-detail-d1" style="display:none;"></div>
           <div class="timeline" id="timeline-d1"><div style="color:#888; font-size:13px;">불러오는 중...</div></div>
         </div>
         <div class="day-section" id="sec-d2">
-          <div class="day-head"><div class="day-num">02</div><div class="day-title">8/4 (화) · 자연과 힐링<span class="today-badge" id="badge-d2" style="display:none;">오늘</span><span class="weather-badge" id="weather-d2" style="display:none;"></span></div></div>
+          <div class="day-head"><div class="day-num">02</div><div class="day-title">8/4 (화) · 자연과 힐링<span class="today-badge" id="badge-d2" style="display:none;">오늘</span><span class="weather-badge" id="weather-d2" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
           <div class="weather-detail" id="weather-detail-d2" style="display:none;"></div>
           <div class="timeline" id="timeline-d2"></div>
         </div>
         <div class="day-section" id="sec-d3">
-          <div class="day-head"><div class="day-num">03</div><div class="day-title">8/5 (수) · 동부 바다<span class="today-badge" id="badge-d3" style="display:none;">오늘</span><span class="weather-badge" id="weather-d3" style="display:none;"></span></div></div>
+          <div class="day-head"><div class="day-num">03</div><div class="day-title">8/5 (수) · 동부 바다<span class="today-badge" id="badge-d3" style="display:none;">오늘</span><span class="weather-badge" id="weather-d3" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
           <div class="weather-detail" id="weather-detail-d3" style="display:none;"></div>
           <div class="timeline" id="timeline-d3"></div>
         </div>
         <div class="day-section" id="sec-d4">
-          <div class="day-head"><div class="day-num">04</div><div class="day-title">8/6 (목) · 서부 탐방<span class="today-badge" id="badge-d4" style="display:none;">오늘</span><span class="weather-badge" id="weather-d4" style="display:none;"></span></div></div>
+          <div class="day-head"><div class="day-num">04</div><div class="day-title">8/6 (목) · 서부 탐방<span class="today-badge" id="badge-d4" style="display:none;">오늘</span><span class="weather-badge" id="weather-d4" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
           <div class="weather-detail" id="weather-detail-d4" style="display:none;"></div>
           <div class="timeline" id="timeline-d4"></div>
         </div>
         <div class="day-section" id="sec-d5">
-          <div class="day-head"><div class="day-num">05</div><div class="day-title">8/7 (금) · 마무리 및 출국<span class="today-badge" id="badge-d5" style="display:none;">오늘</span><span class="weather-badge" id="weather-d5" style="display:none;"></span></div></div>
+          <div class="day-head"><div class="day-num">05</div><div class="day-title">8/7 (금) · 마무리 및 출국<span class="today-badge" id="badge-d5" style="display:none;">오늘</span><span class="weather-badge" id="weather-d5" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
           <div class="weather-detail" id="weather-detail-d5" style="display:none;"></div>
           <div class="timeline" id="timeline-d5"></div>
         </div>
@@ -739,6 +754,12 @@ renderExploreList();
   const targetChip = document.querySelector(`.m-chip.schedule-chip[data-day="${targetDay}"]`);
   if (targetChip) targetChip.classList.add('on');
 
+  // 일정 리스트 기본 상태: 오늘(또는 1일차)만 펼치고 나머지는 접어둠
+  ['d1','d2','d3','d4','d5'].forEach(day => {
+    const sec = document.getElementById(`sec-${day}`);
+    if (sec) sec.classList.toggle('collapsed', day !== targetDay);
+  });
+
   if (!todayKey) return; // 여행 기간이 아니면 '오늘' 하이라이트는 표시하지 않음
 
   const section = document.getElementById(`sec-${todayKey}`);
@@ -751,6 +772,21 @@ renderExploreList();
     if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 300);
 })();
+
+// --- 일정 섹션 접기/펼치기 ---
+document.querySelectorAll('.day-head').forEach(head => {
+  head.addEventListener('click', () => {
+    const sec = head.closest('.day-section');
+    if (sec) sec.classList.toggle('collapsed');
+  });
+});
+
+document.getElementById('toggle-all-days').addEventListener('click', (e) => {
+  const sections = document.querySelectorAll('.day-section');
+  const allExpanded = Array.from(sections).every(s => !s.classList.contains('collapsed'));
+  sections.forEach(s => s.classList.toggle('collapsed', allExpanded));
+  e.target.textContent = allExpanded ? '전체 펼치기' : '전체 접기';
+});
 
 // --- 날씨 (Open-Meteo, API 키 불필요) ---
 (async function loadWeather() {
@@ -808,7 +844,8 @@ renderExploreList();
       });
       if (detailEl) detailEl.innerHTML = slotHtml;
 
-      badgeEl.addEventListener('click', () => {
+      badgeEl.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (!detailEl) return;
         detailEl.style.display = (detailEl.style.display === 'none' || !detailEl.style.display) ? 'flex' : 'none';
       });
@@ -1508,10 +1545,13 @@ if ('serviceWorker' in navigator) {
         const allDayChips = Array.from(mapChips).filter(c => c.dataset.day !== 'all');
         document.querySelector('.m-chip[data-day="all"]').classList.toggle('on', allDayChips.every(c => c.classList.contains('on')));
 
-        // 켤 때만 왼쪽 리스트를 그 날짜 섹션으로 스크롤 (끌 때는 그대로 유지)
+        // 켤 때만 왼쪽 리스트를 그 날짜 섹션으로 펼치고 스크롤 (끌 때는 그대로 유지)
         if (nowOn) {
           const section = document.getElementById(`sec-${dayKey}`);
-          if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (section) {
+            section.classList.remove('collapsed');
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
         }
       }
       window.drawScheduleLayers();
