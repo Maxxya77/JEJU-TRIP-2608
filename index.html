@@ -1192,7 +1192,7 @@ if ('serviceWorker' in navigator) {
   // -----------------------------------------------------
   // B-2. 새로운 장소 검색 (카카오 로컬 검색 + 내 리스트에 저장)
   // -----------------------------------------------------
-  const placesService = new kakao.maps.services.Places();
+  const placesService = new kakao.maps.services.Places(window.mainMap);
   window.pendingSearchResults = {};
 
   function mapKakaoCategoryToBucket(kakaoPlace) {
@@ -1505,7 +1505,7 @@ if ('serviceWorker' in navigator) {
           });
           window.categoryMarkers.push(marker);
         });
-      }, { useMapBounds: true, size: 15 });
+      }, { useMapBounds: true });
     });
   });
 
@@ -1529,7 +1529,7 @@ if ('serviceWorker' in navigator) {
         });
         window.categoryMarkers.push(marker);
       });
-    }, { useMapBounds: true, size: 15 });
+    }, { useMapBounds: true });
   });
 
   // -----------------------------------------------------
