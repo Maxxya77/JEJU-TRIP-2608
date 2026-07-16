@@ -1256,8 +1256,15 @@ renderExploreList();
         mapChips.forEach(c => c.classList.toggle('on', isTurningOn));
       } else {
         chip.classList.toggle('on');
+        const nowOn = chip.classList.contains('on');
         const allDayChips = Array.from(mapChips).filter(c => c.dataset.day !== 'all');
         document.querySelector('.m-chip[data-day="all"]').classList.toggle('on', allDayChips.every(c => c.classList.contains('on')));
+
+        // 켤 때만 왼쪽 리스트를 그 날짜 섹션으로 스크롤 (끌 때는 그대로 유지)
+        if (nowOn) {
+          const section = document.getElementById(`sec-${dayKey}`);
+          if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
       window.drawScheduleLayers();
     });
