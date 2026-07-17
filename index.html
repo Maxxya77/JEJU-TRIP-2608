@@ -687,7 +687,7 @@ function renderExploreList() {
           </div>
           <p class="desc">${place.desc}</p>
           <a href="javascript:void(0)" onclick="window.openKakaoDetailByName('${window.escJs(place.name)}', ${place.lat}, ${place.lng})" class="kakao-link">🗺️ 카카오맵에서 보기</a>
-          <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(place.name)}', ${place.lat}, ${place.lng})" class="nav-link">🧭 길찾기 (카카오내비)</a>
+          <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(place.name)}', ${place.lat}, ${place.lng})" class="nav-link">🧭 길찾기 (모바일 전용)</a>
         </div>
         <label class="switch">
           <input type="checkbox" class="toggle-map-btn" data-key="${key}" ${isChecked}>
@@ -1208,7 +1208,7 @@ document.addEventListener('DOMContentLoaded', function setupInstallPrompt() {
         <h3 class="popup-title" style="margin-bottom:8px;">${name}</h3>
         <div class="link-row">
           <a href="javascript:void(0)" onclick="window.openKakaoDetailByName('${window.escJs(name)}', ${lat}, ${lng})" class="kakao-link">🗺️ 카카오맵</a>
-          <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(name)}', ${lat}, ${lng})" class="nav-link">🧭 길찾기</a>
+          <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(name)}', ${lat}, ${lng})" class="nav-link">🧭 길찾기 (모바일 전용)</a>
         </div>
       </div>
     `;
@@ -1293,7 +1293,7 @@ document.addEventListener('DOMContentLoaded', function setupInstallPrompt() {
           <button class="popup-btn" onclick="window.addSearchResultToSchedule('${customKey}')">추가</button>
         </div>
         <button class="popup-save-btn" onclick="window.saveSearchResultToList('${customKey}')">⭐ 내 리스트에 저장</button>
-        <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(d.place_name)}', ${lat}, ${lng})" class="nav-link">🧭 길찾기</a>
+        <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(d.place_name)}', ${lat}, ${lng})" class="nav-link">🧭 길찾기 (모바일 전용)</a>
         ${d.place_url ? `<a href="${kakaoDetailUrl}" target="_blank" class="kakao-detail-link">🗺️ 카카오맵에서 사진·평점 보기</a>` : `<a href="${kakaoDetailUrl}" target="_blank" class="kakao-link">🗺️ 카카오맵에서 보기</a>`}
       </div>
     `;
@@ -1770,7 +1770,7 @@ document.addEventListener('DOMContentLoaded', function setupInstallPrompt() {
             </div>
             <div class="note">${item.place.desc}</div>
             <a href="javascript:void(0)" onclick="window.openKakaoDetailByName('${window.escJs(item.place.name)}', ${item.place.lat}, ${item.place.lng})" class="kakao-link">🗺️ 카카오맵</a>
-            <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(item.place.name)}', ${item.place.lat}, ${item.place.lng})" class="nav-link">🧭 길찾기</a>
+            <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(item.place.name)}', ${item.place.lat}, ${item.place.lng})" class="nav-link">🧭 길찾기 (모바일 전용)</a>
             <input type="text" class="stop-memo-input" placeholder="💬 메모 남기기 (승현/소영 둘 다 보여요)" value="${(item.memo || '').replace(/"/g, '&quot;')}"
                    onblur="window.updateMemo('${item.id}', this.value)"
                    onkeydown="if(event.key==='Enter') this.blur();">
@@ -1887,7 +1887,7 @@ document.addEventListener('DOMContentLoaded', function setupInstallPrompt() {
           </div>
           <div class="link-row">
             <a href="javascript:void(0)" onclick="window.openKakaoDetailByName('${window.escJs(p.name)}', ${p.lat}, ${p.lng})" class="kakao-link">🗺️ 카카오맵</a>
-            <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(p.name)}', ${p.lat}, ${p.lng})" class="nav-link">🧭 길찾기</a>
+            <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(p.name)}', ${p.lat}, ${p.lng})" class="nav-link">🧭 길찾기 (모바일 전용)</a>
           </div>
         </div>
       `;
