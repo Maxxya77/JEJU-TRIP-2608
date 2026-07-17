@@ -951,10 +951,12 @@ if ('serviceWorker' in navigator) {
 }
 
 // --- 홈 화면 추가 안내 (iOS 배너 / 안드로이드 설치 버튼) ---
-(function setupInstallPrompt() {
+// DOM이 다 만들어진 뒤에 실행되도록 감쌈 (배너 HTML이 이 스크립트보다 뒤에 있어서 필요함)
+document.addEventListener('DOMContentLoaded', function setupInstallPrompt() {
   const banner = document.getElementById('install-banner');
   const textEl = document.getElementById('install-banner-text');
   const closeBtn = document.getElementById('install-banner-close');
+  if (!banner || !textEl || !closeBtn) return; // 요소가 없으면 조용히 건너뜀
 
   const isStandalone = window.navigator.standalone === true ||
     window.matchMedia('(display-mode: standalone)').matches;
@@ -993,7 +995,7 @@ if ('serviceWorker' in navigator) {
     banner.insertBefore(installBtn, closeBtn);
     setTimeout(() => banner.classList.add('show'), 1200);
   });
-})();
+});
 </script>
 
 <script type="module">
@@ -1506,8 +1508,9 @@ if ('serviceWorker' in navigator) {
   // -----------------------------------------------------
   // B-3. 카테고리 빠른 검색 (음식점/카페/명소/주차장/주유소/편의점/약국)
   // -----------------------------------------------------
-  function makeSmallDotImage(color, size = 16) {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2-2}" fill="${color}" stroke="white" stroke-width="2"/></svg>`;
+  function makeSmallDotImage(color, size) {
+    if (!size) size = (window.innerWidth <= 768) ? 30 : 18;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2-2}" fill="${color}" stroke="white" stroke-width="2.5"/></svg>`;
     const url = 'data:image/svg+xml;base64,' + btoa(svg);
     return new kakao.maps.MarkerImage(url, new kakao.maps.Size(size, size), { offset: new kakao.maps.Point(size/2, size/2) });
   }
