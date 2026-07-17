@@ -1375,6 +1375,11 @@ if ('serviceWorker' in navigator) {
     if (!keyword) {
       mapSearchResults.classList.remove('show');
       mapSearchResults.innerHTML = '';
+      // 검색창을 비우면, 엔터로 지도에 뿌려둔 키워드 검색 마커도 같이 정리
+      if (window.activeKeywordSearch) {
+        window.activeKeywordSearch = null;
+        clearCategoryMarkers();
+      }
       return;
     }
 
