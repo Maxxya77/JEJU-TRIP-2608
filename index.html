@@ -377,6 +377,7 @@
   }
 </style>
 <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=4955b7601b5308d5f68f0b45c264ca8f&libraries=services"></script>
+<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 </head>
 <body>
 
@@ -520,12 +521,24 @@
 </div>
 
 <script>
-// --- 카카오맵 길찾기 링크 헬퍼 ---
-window.kakaoNavLink = function(name, lat, lng) {
-  return `https://map.kakao.com/link/to/${encodeURIComponent(name)},${lat},${lng}`;
+// --- 카카오내비 SDK 초기화 (같은 JS 키 재사용) ---
+if (window.Kakao && !Kakao.isInitialized()) {
+  Kakao.init('4955b7601b5308d5f68f0b45c264ca8f');
+}
+
+// --- 카카오내비 앱으로 바로 길찾기 실행 ---
+window.kakaoNaviStart = function(name, lat, lng) {
+  if (!window.Kakao || !Kakao.Navi) {
+    window.showToast ? window.showToast('카카오내비 연결에 실패했어요') : alert('카카오내비 연결에 실패했어요');
+    return;
+  }
+  Kakao.Navi.start({ name: name, x: lng, y: lat, coordType: 'wgs84' });
 };
 window.kakaoMapLink = function(name) {
   return `https://map.kakao.com/?q=${encodeURIComponent(name)}`;
+};
+window.escJs = function(s) {
+  return String(s).replace(/'/g, "\\'");
 };
 
 // --- 토스트 알림 (alert 대신 사용) ---
@@ -674,7 +687,7 @@ function renderExploreList() {
           </div>
           <p class="desc">${place.desc}</p>
           <a href="${window.kakaoMapLink(place.name)}" target="_blank" class="kakao-link">🗺️ 카카오맵에서 보기</a>
-          <a href="${window.kakaoNavLink(place.name, place.lat, place.lng)}" target="_blank" class="nav-link">🧭 길찾기 (카카오내비)</a>
+          <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(place.name)}', ${place.lat}, ${place.lng})" class="nav-link">🧭 길찾기 (카카오내비)</a>
         </div>
         <label class="switch">
           <input type="checkbox" class="toggle-map-btn" data-key="${key}" ${isChecked}>
@@ -1193,7 +1206,7 @@ if ('serviceWorker' in navigator) {
         <h3 class="popup-title" style="margin-bottom:8px;">${name}</h3>
         <div class="link-row">
           <a href="${window.kakaoMapLink(name)}" target="_blank" class="kakao-link">🗺️ 카카오맵</a>
-          <a href="${window.kakaoNavLink(name, lat, lng)}" target="_blank" class="nav-link">🧭 길찾기</a>
+          <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(name)}', ${lat}, ${lng})" class="nav-link">🧭 길찾기</a>
         </div>
       </div>
     `;
@@ -1263,7 +1276,7 @@ if ('serviceWorker' in navigator) {
           <button class="popup-btn" onclick="window.addSearchResultToSchedule('${customKey}')">추가</button>
         </div>
         <button class="popup-save-btn" onclick="window.saveSearchResultToList('${customKey}')">⭐ 내 리스트에 저장</button>
-        <a href="${window.kakaoNavLink(d.place_name, lat, lng)}" target="_blank" class="nav-link">🧭 길찾기</a>
+        <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(d.place_name)}', ${lat}, ${lng})" class="nav-link">🧭 길찾기</a>
         ${d.place_url ? `<a href="${kakaoDetailUrl}" target="_blank" class="kakao-detail-link">🗺️ 카카오맵에서 사진·평점 보기</a>` : `<a href="${kakaoDetailUrl}" target="_blank" class="kakao-link">🗺️ 카카오맵에서 보기</a>`}
       </div>
     `;
@@ -1739,7 +1752,7 @@ if ('serviceWorker' in navigator) {
             </div>
             <div class="note">${item.place.desc}</div>
             <a href="${window.kakaoMapLink(item.place.name)}" target="_blank" class="kakao-link">🗺️ 카카오맵</a>
-            <a href="${window.kakaoNavLink(item.place.name, item.place.lat, item.place.lng)}" target="_blank" class="nav-link">🧭 길찾기</a>
+            <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(item.place.name)}', ${item.place.lat}, ${item.place.lng})" class="nav-link">🧭 길찾기</a>
             <input type="text" class="stop-memo-input" placeholder="💬 메모 남기기 (승현/소영 둘 다 보여요)" value="${(item.memo || '').replace(/"/g, '&quot;')}"
                    onblur="window.updateMemo('${item.id}', this.value)"
                    onkeydown="if(event.key==='Enter') this.blur();">
@@ -1856,7 +1869,7 @@ if ('serviceWorker' in navigator) {
           </div>
           <div class="link-row">
             <a href="${window.kakaoMapLink(p.name)}" target="_blank" class="kakao-link">🗺️ 카카오맵</a>
-            <a href="${window.kakaoNavLink(p.name, p.lat, p.lng)}" target="_blank" class="nav-link">🧭 길찾기</a>
+            <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(p.name)}', ${p.lat}, ${p.lng})" class="nav-link">🧭 길찾기</a>
           </div>
         </div>
       `;
