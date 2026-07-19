@@ -1,7 +1,7 @@
 {
-  "name": "제주 4박5일 · 승현 & 소영",
+  "name": "제주 3박4일 · 승현 & 소영",
   "short_name": "제주여행",
-  "description": "제주 4박5일 여행 일정 · 지도 · 준비물 관리",
+  "description": "제주 3박4일 여행 일정 · 지도 · 준비물 관리",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
