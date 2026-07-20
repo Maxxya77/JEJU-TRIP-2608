@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제주 4박5일 · 승현 & 소영</title>
+
+<!-- 홈 화면 추가 (PWA) 관련 태그 -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#16261F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="제주여행">
+<style>
+  @font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
+    font-weight: 45 920;
+  }
+
+  :root {
+    --sand: #F5EFE1;
+    --sand-deep: #ECE2CC;
+    --ink: #23241F;
+    --pine: #16261F;
+    --tangerine: #E37B34;
+    --tangerine-deep: #C4611F;
+    --teal: #1C6E74;
+    --teal-soft: #DCEEEC;
+    --moss: #5A7350;
+    --line: rgba(35,36,31,0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--sand);
+    color: var(--ink);
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    height: 100vh;
+    overflow: hidden; 
+  }
+
+  /* =========================================
+     레이아웃: 좌우 분할 (PC) / 상하 분할 (모바일)
+     ========================================= */
+  .dashboard-layout { display: flex; height: 100vh; width: 100vw; }
+
+  .panel-left {
+    width: 45%; max-width: 600px; height: 100%; overflow-y: auto;
+    background: var(--sand); position: relative; z-index: 10;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.05);
+  }
+
+  .panel-right { flex: 1; position: relative; background: #e5e3df; }
+  #jejumap { width: 100%; height: 100%; }
+
+  /* =========================================
+     왼쪽 패널: 헤더 & 탭 메뉴
+     ========================================= */
+  .inner-content { padding: 18px 22px 60px; }
+
+  header { margin-bottom: 16px; }
+  .eyebrow { font-size: 13px; letter-spacing: 0.14em; color: var(--tangerine-deep); font-weight: 700; text-transform: uppercase; }
+
+  .header-top-row { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+  .presence-status { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  .presence-item { font-size: 11px; font-weight: 600; color: rgba(35,36,31,0.45); white-space: nowrap; }
+
+  .identity-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 9000; display: none; align-items: center; justify-content: center;
+  }
+  .identity-modal-overlay.show { display: flex; }
+  .identity-modal {
+    background: var(--pine); color: var(--sand); border-radius: 20px;
+    padding: 28px 26px; max-width: 300px; width: 85%; text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  .identity-modal-title { font-size: 19px; font-weight: 800; margin-bottom: 6px; }
+  .identity-modal-sub { font-size: 12.5px; color: rgba(245,239,225,0.6); margin-bottom: 20px; }
+  .identity-modal-buttons { display: flex; gap: 10px; }
+  .identity-btn {
+    flex: 1; padding: 14px 0; border-radius: 12px; border: none;
+    background: var(--tangerine); color: white; font-weight: 800; font-size: 15px; cursor: pointer;
+  }
+  .identity-btn.soyoung { background: var(--teal); }
+  h1 { font-size: 28px; line-height: 1.1; margin: 4px 0 10px; font-weight: 800; letter-spacing: -0.01em; }
+  
+  .quickcard { background: var(--pine); color: var(--sand); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .quickcard .item .k { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(245,239,225,0.55); margin-bottom: 2px; }
+  .quickcard .item .v { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
+  .quickcard .item.full { grid-column: 1 / -1; }
+
+  .viewswitch { display: flex; gap: 6px; background: var(--sand-deep); border-radius: 999px; padding: 4px; margin-bottom: 24px; position: sticky; top: 0; z-index: 20; }
+  .viewswitch button { flex: 1; border: none; background: transparent; padding: 10px 0; font-family: inherit; font-size: 14px; font-weight: 700; color: rgba(35,36,31,0.5); border-radius: 999px; cursor: pointer; transition: all 0.2s; }
+  .viewswitch button.active { background: var(--pine); color: var(--sand); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* =========================================
+     1. 일정 조립 탭
+     ========================================= */
+  .day-section { margin-bottom: 40px; }
+  .day-section { --day-accent: var(--tangerine); }
+  #sec-d1 { --day-accent: #E37B34; }
+  #sec-d2 { --day-accent: #1C6E74; }
+  #sec-d3 { --day-accent: #2A6FA8; }
+  #sec-d4 { --day-accent: #5A7350; }
+  #sec-d5 { --day-accent: #8B4B6B; }
+
+  .day-section.is-today .day-head { border-bottom-color: var(--day-accent); }
+  .day-section.is-today .day-num { position: relative; }
+  .today-badge {
+    font-size: 11px; font-weight: 800; color: white; background: var(--day-accent);
+    padding: 3px 9px; border-radius: 999px; margin-left: 4px; vertical-align: middle;
+  }
+  .weather-badge {
+    display: none; align-items: center; gap: 4px; margin-left: 8px;
+    font-size: 12px; font-weight: 700; color: var(--ink);
+    background: #F4F6F8; padding: 3px 10px; border-radius: 999px;
+    border: 1px solid var(--line); cursor: pointer; vertical-align: middle;
+  }
+  .weather-badge:hover { background: #ECECEC; }
+  .weather-placeholder { font-size: 11px; color: rgba(35,36,31,0.4); font-weight: 600; }
+  .weather-detail {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin: 4px 0 14px; padding: 10px 14px;
+    background: #FAFAFA; border: 1px solid var(--line); border-radius: 10px;
+  }
+  .weather-detail .wd-slot { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 52px; font-size: 12px; }
+  .weather-detail .wd-time { font-weight: 700; color: rgba(35,36,31,0.55); font-size: 11px; }
+  .weather-detail .wd-temp { font-weight: 800; }
+  .day-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; border-bottom: 2px solid var(--line); padding-bottom: 8px; cursor: pointer; }
+  .day-num { font-size: 28px; font-weight: 800; color: var(--day-accent); line-height: 1; letter-spacing: -0.02em; }
+  .day-title { font-size: 17px; font-weight: 800; }
+
+  .schedule-toolbar { display: flex; justify-content: flex-end; margin-bottom: 6px; }
+  .toggle-all-link { font-size: 12.5px; font-weight: 700; color: rgba(35,36,31,0.45); cursor: pointer; }
+  .toggle-all-link:hover { color: var(--pine); }
+
+  .day-arrow {
+    margin-left: auto; flex-shrink: 0; font-size: 13px;
+    color: rgba(35,36,31,0.4); transition: transform 0.2s; padding-bottom: 8px;
+  }
+  .day-section.collapsed .day-arrow { transform: rotate(-90deg); }
+  .day-body {
+    overflow: hidden;
+    max-height: 2000px;
+    transition: max-height 0.35s ease;
+  }
+  .day-section.collapsed .day-body { max-height: 0; }
+
+  .timeline { padding-left: 20px; border-left: 2px solid var(--sand-deep); margin-left: 10px; }
+  .stop { position: relative; padding-bottom: 22px; transition: opacity 0.3s; }
+  .stop::before { content: ''; position: absolute; left: -27px; top: 12px; width: 12px; height: 12px; border-radius: 50%; background: var(--day-accent); border: 2.5px solid var(--sand); }
+  
+  .stop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .time-input { width: 90px; padding: 6px 8px; border: 1.5px dashed var(--day-accent); border-radius: 6px; font-family: inherit; font-size: 13.5px; font-weight: 800; color: var(--day-accent); text-align: center; background: #fff; outline: none; transition: all 0.2s; }
+
+  .stop-memo-input {
+    display: block; width: 100%; margin-top: 8px; padding: 7px 10px;
+    border: 1px dashed var(--line); border-radius: 8px;
+    font-family: inherit; font-size: 12.5px; color: rgba(35,36,31,0.75);
+    background: #FAFAFA; outline: none; box-sizing: border-box;
+  }
+  .stop-memo-input:focus { border-color: var(--day-accent); background: white; }
+  .stop-memo-input::placeholder { color: rgba(35,36,31,0.35); }
+  .time-input:focus { border-color: var(--day-accent); background: #FFF9F5; border-style: solid; }
+  .time-input::placeholder { color: var(--day-accent); opacity: 0.45; font-weight: 600; }
+
+  .stop-controls { display: flex; gap: 4px; }
+  .btn-ctrl { background: white; border: 1px solid var(--line); border-radius: 6px; width: 34px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); font-size: 12px; font-weight: 800; transition: background 0.2s; }
+  .btn-ctrl.del { color: #E35E34; font-size: 14px; }
+  .btn-ctrl:active { background: #f0f0f0; transform: scale(0.95); }
+  
+  .stop .name-wrap { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .stop .name { font-size: 16px; font-weight: 800; }
+  .stop .category { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+  .stop .note { font-size: 13px; line-height: 1.4; color: rgba(35,36,31,0.72); }
+
+  /* =========================================
+     2. 장소 탐색 탭
+     ========================================= */
+  .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .filter-chips .chip { font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px; border: 1.5px solid var(--line); background: white; cursor: pointer; color: rgba(35,36,31,0.6); transition: all 0.2s; user-select: none; }
+  
+  /* 소분류 컬러 매핑 */
+  .filter-chips .chip[data-category="all"].on { background: var(--pine); border-color: var(--pine); color: white; }
+  .filter-chips .chip[data-category="명소/여행지"].on { background: #25939A; border-color: #25939A; color: white; }
+  .filter-chips .chip[data-category="카페/디저트"].on { background: #F0A500; border-color: #F0A500; color: white; }
+  .filter-chips .chip[data-category="고기 (흑돼지/소고기)"].on { background: #E34A33; border-color: #E34A33; color: white; }
+  .filter-chips .chip[data-category="국/찌개 (해장국)"].on { background: #8E6DAE; border-color: #8E6DAE; color: white; }
+  .filter-chips .chip[data-category="해산물/향토음식"].on { background: #3D8CDA; border-color: #3D8CDA; color: white; }
+  .filter-chips .chip[data-category="양식/기타"].on { background: #759668; border-color: #759668; color: white; }
+  .filter-chips .chip[data-category="돈가스/분식"].on { background: #A6763D; border-color: #A6763D; color: white; }
+
+  .master-toggle-wrapper { display: flex; justify-content: space-between; align-items: center; background: #FAFAFA; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 16px; }
+  .sort-toggle-wrap { display: flex; align-items: center; gap: 7px; margin-bottom: 14px; font-size: 12.5px; }
+  .sort-link { color: rgba(35,36,31,0.4); font-weight: 600; cursor: pointer; }
+  .sort-link.active { color: var(--ink); font-weight: 800; }
+  .sort-dot { color: rgba(35,36,31,0.25); font-size: 11px; }
+  .explore-search-input {
+    width: 100%; padding: 12px 14px; margin-bottom: 12px;
+    border-radius: 12px; border: 1.5px solid var(--line);
+    font-family: inherit; font-size: 14px; background: white;
+  }
+  .explore-search-input:focus { outline: none; border-color: var(--pine); }
+  .master-toggle-text { font-size: 14px; font-weight: 800; color: var(--ink); }
+
+  .place-card { display: flex; justify-content: space-between; align-items: center; background: white; border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: background 0.2s; }
+  .place-card:hover { background: #F4F6F8; }
+  .place-card .info { flex: 1; padding-right: 15px; }
+  .place-card .name-wrap { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .place-card .name { font-size: 16px; font-weight: 800; color: var(--ink); }
+  .place-card .category { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+  .card-delete-btn { background: none; border: none; color: rgba(35,36,31,0.35); font-size: 13px; cursor: pointer; padding: 2px 4px; margin-left: auto; }
+  .card-delete-btn:hover { color: #E35E34; }
+
+  .app-toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: var(--pine); color: var(--sand);
+    padding: 12px 22px; border-radius: 999px;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 13.5px; font-weight: 700;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+    z-index: 5000; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    max-width: 88vw; text-align: center;
+  }
+  .app-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- 홈 화면 추가 안내 배너 (iOS) / 설치 버튼 (Android) ---------- */
+  .install-banner {
+    position: fixed; left: 12px; right: 12px; bottom: 16px;
+    background: var(--pine); color: var(--sand);
+    border-radius: 16px; padding: 14px 16px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+    z-index: 6000; display: none;
+    font-family: 'Pretendard', sans-serif;
+    align-items: center; gap: 12px;
+  }
+  .install-banner.show { display: flex; }
+  .install-banner .ib-icon { font-size: 26px; flex-shrink: 0; }
+  .install-banner .ib-text { flex: 1; font-size: 13px; line-height: 1.4; }
+  .install-banner .ib-text b { color: var(--tangerine); }
+  .install-banner .ib-close {
+    background: rgba(245,239,225,0.15); border: none; color: var(--sand);
+    width: 26px; height: 26px; border-radius: 50%; font-size: 14px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .install-btn {
+    background: var(--tangerine); color: white; border: none;
+    padding: 8px 14px; border-radius: 999px; font-weight: 800;
+    font-size: 12.5px; cursor: pointer; flex-shrink: 0; white-space: nowrap;
+  }
+
+  .hidden-restore-wrap { margin-top: 8px; padding-top: 14px; border-top: 1px dashed var(--line); text-align: center; }
+  .hidden-toggle-link { font-size: 12.5px; font-weight: 700; color: rgba(35,36,31,0.45); text-decoration: none; cursor: pointer; }
+  .hidden-toggle-link:hover { color: var(--pine); }
+  .hidden-list { margin-top: 10px; text-align: left; }
+  .hidden-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #FAFAFA; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 6px; font-size: 13px; color: rgba(35,36,31,0.6); }
+  .restore-btn { background: var(--teal-soft); color: var(--teal); border: none; padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; cursor: pointer; }
+  .place-card .desc { font-size: 13px; color: rgba(35,36,31,0.72); line-height: 1.4; margin: 0; }
+
+  .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E0E0E0; transition: .3s; border-radius: 26px; }
+  .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  input:checked + .slider { background-color: var(--tangerine); }
+  input:checked + .slider:before { transform: translateX(22px); }
+
+  /* =========================================
+     3. 준비물 탭
+     ========================================= */
+  .packing-input-group { display: flex; gap: 8px; margin-bottom: 20px; }
+  .packing-input-group input { flex: 1; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--line); font-size: 14.5px; font-family: inherit; }
+  .packing-input-group input:focus { outline: none; border-color: var(--pine); }
+  .packing-input-group button { padding: 0 20px; background: var(--tangerine); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 14.5px; cursor: pointer; }
+  
+  .packing-list { list-style: none; padding: 0; margin: 0; background: white; border-radius: 16px; border: 1px solid var(--line); overflow: hidden; }
+  .packing-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--line); }
+  .packing-item:last-child { border-bottom: none; }
+  .packing-text { flex: 1; font-size: 15.5px; font-weight: 600; color: var(--ink); transition: color 0.2s; padding-right: 10px; }
+  .packing-item.done .packing-text { color: rgba(35,36,31,0.4); text-decoration: line-through; }
+  
+  .user-checks { display: flex; gap: 12px; align-items: center; }
+  .user-check-label { font-size: 12.5px; font-weight: 800; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #3482E3; }
+  .user-check-label.soyoung { color: #E35E34; }
+  .user-check-label input { cursor: pointer; width: 16px; height: 16px; accent-color: var(--pine); }
+  .packing-delete { background: transparent; border: none; font-size: 18px; color: rgba(35,36,31,0.3); cursor: pointer; padding: 4px; margin-left: 5px; }
+
+  /* =========================================
+     지도 위 오버레이 칩 및 팝업
+     ========================================= */
+  .map-overlay-controls {
+    display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .map-overlay-controls::-webkit-scrollbar { display: none; }
+
+  .map-top-overlay { position: absolute; top: 15px; left: 15px; right: 15px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+  .m-chip { flex: 0 0 auto; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: 1.5px solid var(--line); border-radius: 999px; padding: 7px 12px; font-size: 12.5px; font-weight: 800; color: rgba(35,36,31,0.5); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.2s; white-space: nowrap; }
+  .m-chip.on { background: var(--pine); color: white; border-color: var(--pine); }
+
+  .map-search-wrap { position: relative; }
+  .cat-chip {
+    flex: 0 0 auto; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px);
+    border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 11px;
+    font-size: 12px; font-weight: 800; color: rgba(35,36,31,0.55); cursor: pointer;
+    white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.2s;
+  }
+  .cat-chip.on { color: white; }
+  .map-search-input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); font-family: inherit; font-size: 13.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); background: white; }
+  .map-search-input:focus { outline: none; border-color: var(--pine); }
+  .map-search-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: white; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.18); max-height: 260px; overflow-y: auto; z-index: 1001; display: none; }
+  .map-search-results.show { display: block; }
+  .map-search-result-item { padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .map-search-result-item:last-child { border-bottom: none; }
+  .map-search-result-item:hover { background: #F4F6F8; }
+  .map-search-result-item .r-name { font-weight: 800; font-size: 13.5px; color: var(--ink); }
+  .map-search-result-item .r-addr { font-size: 11.5px; color: rgba(35,36,31,0.55); margin-top: 2px; }
+  .map-search-result-item.starred { background: #FFFBF0; }
+  .map-search-result-item.starred .r-name { color: var(--tangerine-deep); }
+  .map-search-result-item.hidden-match { background: #F4F4F2; }
+  .map-search-result-item.hidden-match .r-name { color: rgba(35,36,31,0.5); }
+  .search-group-label { padding: 8px 14px 4px; font-size: 11px; font-weight: 800; color: rgba(35,36,31,0.45); background: #FAFAFA; }
+
+  .map-expand-btn {
+    position: absolute; bottom: 15px; right: 15px; z-index: 1000;
+    background: var(--pine); color: white; border: none; border-radius: 999px;
+    padding: 9px 14px; font-size: 12.5px; font-weight: 800; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25); display: none;
+  }
+
+  .popup-content { text-align: center; width: 200px; font-family: 'Pretendard', sans-serif; }
+  .popup-title-row { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .popup-title { font-size: 16px; font-weight: 800; margin: 0; color: var(--ink); overflow-wrap: break-word; word-break: keep-all; }
+  .popup-cat { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; display: inline-block; }
+  .popup-controls { display: flex; gap: 6px; margin-bottom: 6px; }
+  .popup-select { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; outline: none; }
+  .popup-btn { background: var(--tangerine); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer; }
+  .popup-save-btn { width: 100%; background: var(--teal-soft); color: var(--teal); border: none; padding: 6px 10px; border-radius: 6px; font-weight: 800; font-size: 12.5px; cursor: pointer; margin-bottom: 6px; }
+  .link-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+  .kakao-link { display: block; margin-top: 8px; font-size: 12.5px; font-weight: 700; color: var(--teal); text-decoration: none; border-bottom: 1.5px dashed var(--teal); }
+  .nav-link { display: block; margin-top: 6px; font-size: 12.5px; font-weight: 700; color: #3A2929; text-decoration: none; border-bottom: 1.5px dashed #B8860B; }
+  .kakao-detail-link { display: block; margin-top: 8px; font-size: 12px; font-weight: 700; color: #3A2929; text-decoration: none; background: #FEE500; padding: 5px 8px; border-radius: 6px; text-align: center; }
+  .link-row > .kakao-link, .link-row > .nav-link { display: inline-block; margin-top: 0; }
+
+  @media (max-width: 800px) {
+    .popup-content { width: 170px; }
+    .popup-title { font-size: 13.5px; }
+    .popup-cat { font-size: 10px; padding: 1px 5px; }
+    .popup-controls { margin-bottom: 4px; }
+    .popup-select { font-size: 12px; padding: 5px; }
+    .popup-btn { font-size: 12px; padding: 5px 10px; }
+    .popup-save-btn { font-size: 11.5px; padding: 5px 8px; }
+    .kakao-link, .nav-link { font-size: 11px; }
+    .link-row { gap: 8px; margin-top: 2px; }
+    .map-expand-btn { display: block; }
+  }
+
+  @media (max-width: 800px) {
+    .dashboard-layout { flex-direction: column; }
+    .panel-right { order: -1; flex: 0 0 auto; height: 38vh; position: relative; z-index: 5; border-bottom: 2px solid var(--line); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: height 0.3s; }
+    .panel-left { width: 100%; max-width: 100%; flex: 1 1 auto; height: auto; overflow-y: auto; box-shadow: none; z-index: 10; transition: opacity 0.2s; }
+    .inner-content { padding: 20px 16px 60px; }
+
+    body.map-expanded .panel-right { height: 85vh; }
+    body.map-expanded .panel-left { display: none; }
+  }
+</style>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=4955b7601b5308d5f68f0b45c264ca8f&libraries=services"></script>
+<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+</head>
+<body>
+
+<div class="dashboard-layout">
+  
+  <div class="panel-left">
+    <div class="inner-content">
+      <header>
+        <div class="header-top-row">
+          <div class="eyebrow">Jeju · 8.3 — 8.7</div>
+          <div class="presence-status" id="presence-status">
+            <span class="presence-item" id="presence-seunghyun">승현 -</span>
+            <span class="presence-item" id="presence-soyoung">소영 -</span>
+          </div>
+        </div>
+        <h1>제주 4박5일</h1>
+        <div class="quickcard">
+          <div class="item"><div class="k">기간</div><div class="v">8/3(월) — 8/7(금)</div></div>
+          <div class="item"><div class="k">숙소</div><div class="v">서귀포 고정</div></div>
+          <div class="item full"><div class="k">이용 방법</div><div class="v" style="font-size:13.5px; line-height:1.5; font-weight: 600;">1. '장소 탐색' 탭에서 스위치 켜기, 또는 지도 위 검색창·카테고리로 새 장소 찾기<br>2. 지도에 뜬 핀 탭하기<br>3. 날짜 선택 후 '추가' (또는 '내 리스트에 저장') — 카카오맵·길찾기 링크로 위치만 확인도 가능</div></div>
+        </div>
+      </header>
+
+      <div class="viewswitch">
+        <button id="btn-schedule" class="active">일정</button>
+        <button id="btn-explore">장소 탐색</button>
+        <button id="btn-packing">준비물</button>
+      </div>
+
+      <div id="view-schedule" class="tab-content active">
+        <div class="schedule-toolbar">
+          <span class="toggle-all-link" id="toggle-all-days">전체 펼치기</span>
+        </div>
+        <div class="day-section" id="sec-d1">
+          <div class="day-head"><div class="day-num">01</div><div class="day-title">8/3 (월) · 도착 및 이동<span class="today-badge" id="badge-d1" style="display:none;">오늘</span><span class="weather-badge" id="weather-d1" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
+          <div class="day-body">
+            <div class="weather-detail" id="weather-detail-d1" style="display:none;"></div>
+            <div class="timeline" id="timeline-d1"><div style="color:#888; font-size:13px;">불러오는 중...</div></div>
+          </div>
+        </div>
+        <div class="day-section" id="sec-d2">
+          <div class="day-head"><div class="day-num">02</div><div class="day-title">8/4 (화) · 자연과 힐링<span class="today-badge" id="badge-d2" style="display:none;">오늘</span><span class="weather-badge" id="weather-d2" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
+          <div class="day-body">
+            <div class="weather-detail" id="weather-detail-d2" style="display:none;"></div>
+            <div class="timeline" id="timeline-d2"></div>
+          </div>
+        </div>
+        <div class="day-section" id="sec-d3">
+          <div class="day-head"><div class="day-num">03</div><div class="day-title">8/5 (수) · 동부 바다<span class="today-badge" id="badge-d3" style="display:none;">오늘</span><span class="weather-badge" id="weather-d3" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
+          <div class="day-body">
+            <div class="weather-detail" id="weather-detail-d3" style="display:none;"></div>
+            <div class="timeline" id="timeline-d3"></div>
+          </div>
+        </div>
+        <div class="day-section" id="sec-d4">
+          <div class="day-head"><div class="day-num">04</div><div class="day-title">8/6 (목) · 서부 탐방<span class="today-badge" id="badge-d4" style="display:none;">오늘</span><span class="weather-badge" id="weather-d4" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
+          <div class="day-body">
+            <div class="weather-detail" id="weather-detail-d4" style="display:none;"></div>
+            <div class="timeline" id="timeline-d4"></div>
+          </div>
+        </div>
+        <div class="day-section" id="sec-d5">
+          <div class="day-head"><div class="day-num">05</div><div class="day-title">8/7 (금) · 마무리 및 출국<span class="today-badge" id="badge-d5" style="display:none;">오늘</span><span class="weather-badge" id="weather-d5" style="display:none;"></span></div><span class="day-arrow">▾</span></div>
+          <div class="day-body">
+            <div class="weather-detail" id="weather-detail-d5" style="display:none;"></div>
+            <div class="timeline" id="timeline-d5"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-explore" class="tab-content">
+        <div class="filter-chips" id="category-chips">
+          <span class="chip on" data-category="all">전체 보기</span>
+          <span class="chip" data-category="명소/여행지">명소/여행지</span>
+          <span class="chip" data-category="카페/디저트">카페/디저트</span>
+          <span class="chip" data-category="고기 (흑돼지/소고기)">고기 (흑돼지/소고기)</span>
+          <span class="chip" data-category="국/찌개 (해장국)">국/찌개 (해장국)</span>
+          <span class="chip" data-category="해산물/향토음식">해산물/향토음식</span>
+          <span class="chip" data-category="양식/기타">양식/기타</span>
+          <span class="chip" data-category="돈가스/분식">돈가스/분식</span>
+        </div>
+
+        <input type="text" id="explore-search" class="explore-search-input" placeholder="🔍 장소 이름/설명으로 검색...">
+        
+        <div class="master-toggle-wrapper">
+          <span class="master-toggle-text">현재 목록 지도에 모두 표시</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-all-explore">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="sort-toggle-wrap" id="sort-toggle-wrap">
+          <span class="sort-link active" data-sort="name">가나다순</span>
+          <span class="sort-dot">·</span>
+          <span class="sort-link" data-sort="recent">최근 추가순</span>
+        </div>
+
+        <div id="explore-wrapper"></div>
+      </div>
+
+      <div id="view-packing" class="tab-content">
+        <div class="packing-input-group">
+          <input type="text" id="packing-input" placeholder="추가할 물품 입력">
+          <button id="btn-add-packing">추가</button>
+        </div>
+        <ul id="packing-list-ul" class="packing-list">
+          <div style="padding: 20px; text-align: center; color: rgba(35,36,31,0.4); font-size: 13px;">불러오는 중...</div>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <div id="jejumap"></div>
+    <div class="map-top-overlay">
+      <div class="map-overlay-controls">
+        <span class="m-chip on schedule-chip" data-day="all">전체 일정</span>
+        <span class="m-chip on schedule-chip" data-day="d1">1일</span>
+        <span class="m-chip on schedule-chip" data-day="d2">2일</span>
+        <span class="m-chip on schedule-chip" data-day="d3">3일</span>
+        <span class="m-chip on schedule-chip" data-day="d4">4일</span>
+        <span class="m-chip on schedule-chip" data-day="d5">5일</span>
+        <span class="cat-chip" data-code="FD6" data-color="#E35E34">🍚 음식점</span>
+        <span class="cat-chip" data-code="CE7" data-color="#D48D28">☕ 카페</span>
+        <span class="cat-chip" data-code="AT4" data-color="#1C6E74">🏞️ 명소</span>
+        <span class="cat-chip" data-code="PK6" data-color="#5B7C99">🅿️ 주차장</span>
+        <span class="cat-chip" data-code="OL7" data-color="#3E6FB5">⛽ 주유소</span>
+        <span class="cat-chip" data-code="CS2" data-color="#8E6DAE">🏪 편의점</span>
+        <span class="cat-chip" data-code="PM9" data-color="#3DA65D">💊 약국</span>
+      </div>
+      <div class="map-search-wrap">
+        <input type="text" id="map-search-input" class="map-search-input" placeholder="🔍 새로운 장소 검색 (카카오맵)">
+        <div id="map-search-results" class="map-search-results"></div>
+      </div>
+    </div>
+    <button id="map-expand-btn" class="map-expand-btn">🔎 지도 크게보기</button>
+  </div>
+
+</div>
+
+<script>
+// --- 카카오내비 SDK 초기화 (같은 JS 키 재사용) ---
+if (window.Kakao && !Kakao.isInitialized()) {
+  Kakao.init('4955b7601b5308d5f68f0b45c264ca8f');
+}
+
+// --- 카카오내비 앱으로 바로 길찾기 실행 ---
+window.kakaoNaviStart = function(name, lat, lng) {
+  if (!window.Kakao || !Kakao.Navi) {
+    window.showToast ? window.showToast('카카오내비 연결에 실패했어요') : alert('카카오내비 연결에 실패했어요');
+    return;
+  }
+  Kakao.Navi.start({ name: name, x: lng, y: lat, coordType: 'wgs84' });
+};
+window.kakaoMapLink = function(name) {
+  return `https://map.kakao.com/?q=${encodeURIComponent(name)}`;
+};
+window.escJs = function(s) {
+  return String(s).replace(/'/g, "\\'");
+};
+
+// --- 토스트 알림 (alert 대신 사용) ---
+window.showToast = function(message) {
+  let toastEl = document.getElementById('app-toast');
+  if (!toastEl) {
+    toastEl = document.createElement('div');
+    toastEl.id = 'app-toast';
+    toastEl.className = 'app-toast';
+    document.body.appendChild(toastEl);
+  }
+  toastEl.textContent = message;
+  toastEl.classList.remove('show');
+  void toastEl.offsetWidth; // 리플로우로 애니메이션 재시작
+  toastEl.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => {
+    toastEl.classList.remove('show');
+  }, 2400);
+};
+
+// --- 데이터 베이스 (사용자 요청 리스트 100% 반영) ---
+const ALL_PLACES = {
+  // 명소/여행지 (기존 13개)
+  "p_airport": { name: "제주공항", category: "명소/여행지", lat: 33.5070, lng: 126.4934, desc: "도착 및 렌트카 픽업", url: "https://map.naver.com/p/search/제주공항" },
+  "p_base": { name: "서귀포 숙소", category: "명소/여행지", lat: 33.2448, lng: 126.5644, desc: "우리들의 베이스캠프" },
+  "p_olle": { name: "매일올레시장", category: "명소/여행지", lat: 33.2497, lng: 126.564, desc: "저녁 식사 및 야식 거리", url: "https://naver.me/FgHDJag6" },
+  "p_shiny": { name: "샤이니숲길", category: "명소/여행지", lat: 33.4275, lng: 126.6617, desc: "왕복 5~10분 숲길 포토존", url: "https://naver.me/x8tpDECV" },
+  "p_soesokkak": { name: "쇠소깍", category: "명소/여행지", lat: 33.2523, lng: 126.6238, desc: "투명카약 또는 테우 체험", url: "https://naver.me/F42M0Dvw" },
+  "p_gwangchigi": { name: "광치기해변", category: "명소/여행지", lat: 33.4370, lng: 126.9275, desc: "성산일출봉을 배경 뷰 포인트", url: "https://naver.me/FtThG0s5" },
+  "p_seopji": { name: "섭지코지", category: "명소/여행지", lat: 33.4242, lng: 126.9311, desc: "가볍게 걷기 좋은 해안 절경", url: "https://naver.me/xoH8AY7q" },
+  "p_gimnyeong": { name: "김녕해수욕장", category: "명소/여행지", lat: 33.5582, lng: 126.7597, desc: "에메랄드빛 바다 수영 스폿", url: "https://naver.me/GctrVhXR" },
+  "p_alpaca": { name: "도치돌 알파카목장", category: "명소/여행지", lat: 33.4099, lng: 126.3667, desc: "초원 평지, 먹이주기 체험", url: "https://naver.me/xprAP83t" },
+  "p_aewol": { name: "애월 카페거리", category: "명소/여행지", lat: 33.4623, lng: 126.3103, desc: "오션뷰 카페 및 산책", url: "https://naver.me/I55awXy6" },
+  "p_geumneung": { name: "금능해수욕장", category: "명소/여행지", lat: 33.3898, lng: 126.2353, desc: "비교적 한적한 수영 명소", url: "https://naver.me/Fr7ptPUY" },
+  "p_sindo": { name: "신도포구", category: "명소/여행지", lat: 33.2797, lng: 126.1763, desc: "노을과 야생 돌고래 감상", url: "https://map.naver.com/p/search/신도포구" },
+  "p_ihoteu": { name: "이호테우해변", category: "명소/여행지", lat: 33.4979, lng: 126.4531, desc: "공항 가기 전 말등대 포토존", url: "https://naver.me/FxFtVyc6" },
+  
+  // 맛집/카페 (사용자 제공 24개 완벽 복원)
+  "f_beke": { name: "베케", category: "카페/디저트", lat: 33.255, lng: 126.586, desc: "이끼와 숲이 어우러진 생태 정원 카페. 차콩크림라떼 추천.", url: "https://map.naver.com/p/search/제주%20베케" },
+  "f_gimnyeong_bread": { name: "김녕떠오르길", category: "카페/디저트", lat: 33.557, lng: 126.759, desc: "김녕 바닷길 인근 에메랄드빛 오션뷰 베이커리.", url: "https://map.naver.com/p/search/제주%20김녕떠오르길" },
+  "f_delmundo": { name: "델문도", category: "카페/디저트", lat: 33.543, lng: 126.668, desc: "함덕 해수욕장 바다 위에 떠 있는 듯한 대형 오션뷰 카페.", url: "https://map.naver.com/p/search/제주%20함덕%20델문도" },
+  "f_ara": { name: "아라찐빵", category: "카페/디저트", lat: 33.492, lng: 126.544, desc: "유튜브 핑계고 극찬. 부드러운 단일메뉴 팥찐빵.", url: "https://map.naver.com/p/search/제주%20아라찐빵" },
+  "f_glenco": { name: "카페 글렌코", category: "카페/디저트", lat: 33.435, lng: 126.772, desc: "스코틀랜드 초원 모티브의 대형 정원 카페. 수국/핑크뮬리.", url: "https://map.naver.com/p/search/제주%20카페글렌코" },
+  "f_scenic": { name: "카페씨닉", category: "카페/디저트", lat: 33.555, lng: 126.795, desc: "월정리 해변 정면 탁 트인 오션뷰 디저트 카페.", url: "https://map.naver.com/p/search/제주%20카페씨닉" },
+  "f_harakeke": { name: "하라케케", category: "카페/디저트", lat: 33.238, lng: 126.536, desc: "야외 수영장 및 리조트 분위기. 식사 대용 메뉴도 있음.", url: "https://map.naver.com/p/search/서귀포%20하라케케" },
+  "f_monocle": { name: "모노클제주", category: "카페/디저트", lat: 33.275, lng: 126.657, desc: "감귤 창고 개조. 붉은 벽돌 빈티지 감성 및 콜드브루.", url: "https://map.naver.com/p/search/제주%20모노클제주" },
+  "f_saturday": { name: "세러데이아일랜드", category: "카페/디저트", lat: 33.277, lng: 126.702, desc: "남원읍 시칠리아 감성. 부라타치즈 크루아상(부라타빠쬬).", url: "https://map.naver.com/p/search/제주%20세러데이아일랜드%20카페" },
+  "f_damso": { name: "카페 담소요", category: "카페/디저트", lat: 33.308, lng: 126.627, desc: "한라산 배경 한적한 정원형 브런치 카페. 밀크티 추천.", url: "https://map.naver.com/p/search/제주%20카페담소요" },
+  "f_bean": { name: "빈투지", category: "카페/디저트", lat: 33.516, lng: 126.528, desc: "제주시 건입동 조용하고 차분한 분위기의 스페셜티 로스터리.", url: "https://map.naver.com/p/search/제주%20빈투지" },
+  "f_osulloc": { name: "오설록 티 뮤지엄", category: "카페/디저트", lat: 33.305, lng: 126.289, desc: "제주 대표 녹차 밭과 박물관. 녹차 롤케이크 필수.", url: "https://map.naver.com/p/search/제주%20오설록%20티%20뮤지엄" },
+  
+  "f_byeoldon": { name: "별돈별 중문 본점", category: "고기 (흑돼지/소고기)", lat: 33.257, lng: 126.441, desc: "귤밭/야자수 이국적 뷰. 와인과 즐기는 프리미엄 흑돼지.", url: "https://map.naver.com/p/search/별돈별%20중문" },
+  "f_sangrok": { name: "상록식당", category: "고기 (흑돼지/소고기)", lat: 33.267, lng: 126.583, desc: "매콤달달 양념 삼겹살 연탄구이 노포 식당.", url: "https://map.naver.com/p/search/제주%20상록식당" },
+  "f_chadol": { name: "차돌집", category: "고기 (흑돼지/소고기)", lat: 33.485, lng: 126.492, desc: "연동 소고기 특수부위 맛집. 가성비 좋은 숯불구이.", url: "https://map.naver.com/p/search/제주%20차돌집" },
+  "f_topyeong": { name: "토평골", category: "고기 (흑돼지/소고기)", lat: 33.265, lng: 126.580, desc: "두툼하고 육즙 가득한 흑돼지를 연탄불에 구워주는 도민 맛집.", url: "https://map.naver.com/p/search/제주%20토평골" },
+  
+  "f_sanji": { name: "산지해장국", category: "국/찌개 (해장국)", lat: 33.515, lng: 126.532, desc: "소내장 듬뿍 칼칼한 내장탕. 도민 추천 해장국.", url: "https://map.naver.com/p/search/제주%20산지해장국" },
+  "f_sunflower": { name: "신해바라기분식", category: "국/찌개 (해장국)", lat: 33.479, lng: 126.474, desc: "고기 듬뿍 걸쭉하고 매운 뚝배기 순두부찌개 로컬 맛집.", url: "https://map.naver.com/p/search/신해바라기분식%20한라대점" },
+  "f_daechun": { name: "대춘해장국 노형점", category: "국/찌개 (해장국)", lat: 33.481, lng: 126.471, desc: "맑고 깔끔한 국물의 선지 해장국 및 부드러운 내장탕.", url: "https://map.naver.com/p/search/대춘해장국%20노형점" },
+  "f_woojin": { name: "우진해장국", category: "국/찌개 (해장국)", lat: 33.511, lng: 126.520, desc: "제주산 고사리를 갈아 넣은 고사리 육개장 전국구 핫플.", url: "https://map.naver.com/p/search/제주%20우진해장국" },
+  
+  "f_daemun": { name: "대문집", category: "해산물/향토음식", lat: 33.396, lng: 126.257, desc: "갈치조림과 전복뚝배기. 깔끔하고 정갈한 제주 향토음식.", url: "https://map.naver.com/p/search/제주%20대문집" },
+  "f_hanrim": { name: "한림수협 센터", category: "해산물/향토음식", lat: 33.415, lng: 126.262, desc: "신선한 제철 횟감을 가성비 좋게 포장할 수 있는 회센터.", url: "https://map.naver.com/p/search/한림수협다목적어업인지원센터" },
+  "f_jjukku": { name: "쭈꾸쭈꾸쭈꾸미", category: "해산물/향토음식", lat: 33.488, lng: 126.495, desc: "매콤 중독성 양념 주꾸미 볶음. 남은 양념에 치즈 볶음밥.", url: "https://map.naver.com/p/search/제주%20쭈꾸쭈꾸쭈꾸미" },
+  
+  "f_ribosco": { name: "리보스코화덕피자", category: "양식/기타", lat: 33.486, lng: 126.481, desc: "해녀 채취 톳 도우 위에 감자튀김을 올린 한라산 피자 시그니처.", url: "https://map.naver.com/p/search/제주%20리보스코화덕피자" },
+
+  "f_heukdwaeji_ogyeop": { name: "불타는 흑돼지오겹말이", category: "고기 (흑돼지/소고기)", lat: 33.5138, lng: 126.5295, desc: "동문야시장 명물. 화려한 불쇼와 함께 흑돼지 삼겹살로 김치·채소를 돌돌 말아 구워주는 길거리 요리.", url: "https://map.naver.com/p/search/제주%20동문야시장%20흑돼지오겹말이" },
+  "f_samwon_hoe": { name: "동문삼원횟집", category: "해산물/향토음식", lat: 33.5143, lng: 126.5288, desc: "동문시장 안 회 전문점. 매일 신선한 활어회를 2만~5만원대로 저렴하게 즐길 수 있음.", url: "https://map.naver.com/p/search/동문삼원횟집" },
+  "f_oiljang_tteok": { name: "오일장 떡볶이", category: "돈가스/분식", lat: 33.5140, lng: 126.5299, desc: "동문시장 분식집, 블랙핑크 방문으로 유명. 굵은 가래떡 떡볶이가 시그니처인데 후기상 맵기는 순한 편.", url: "https://map.naver.com/p/search/오일장떡볶이" },
+
+  "f_gossine": { name: "고씨네천지국수 올레시장본점", category: "국/찌개 (해장국)", lat: 33.2497, lng: 126.5646, desc: "서귀포 올레시장 근처 고기국수 맛집. 뼈육수 대신 멸치육수를 쓴 시그니처 멸고국수가 깔끔하고 자극적이지 않음.", url: "https://map.naver.com/p/search/고씨네천지국수%20올레시장본점" },
+  "f_moljil": { name: "몰질 식육식당", category: "양식/기타", lat: 33.2615636, lng: 126.49447, desc: "서귀포 강정동의 독특한 고기짬뽕 전문점. 해물 대신 돼지고기와 채소를 듬뿍 넣어 김치찌개처럼 걸쭉하고 얼큰함.", url: "https://map.naver.com/p/search/몰질식육식당" },
+  "f_gongcheonpo": { name: "공천포식당", category: "해산물/향토음식", lat: 33.2664055, lng: 126.6426731, desc: "남원 공천포구 앞 전통 제주식 물회 맛집. 된장 베이스라 자극적이지 않고 구수하며, 전복물회·한치물회가 대표 메뉴.", url: "https://map.naver.com/p/search/공천포식당" },
+  "f_ojo_haenyeo": { name: "오조해녀의집", category: "해산물/향토음식", lat: 33.4536, lng: 126.9247, desc: "성산일출봉 근처 오조리 해녀들이 직접 운영하는 전복죽 전문점. 전복 내장을 듬뿍 넣어 진하고 고소한 맛.", url: "https://map.naver.com/p/search/오조해녀의집" },
+
+  "p_manjanggul": { name: "만장굴", category: "명소/여행지", lat: 33.5287, lng: 126.7714, desc: "세계적 규모의 용암동굴, 유네스코 세계자연유산. 웅장한 동굴 내부와 용암석주가 볼거리.", url: "https://map.naver.com/p/search/만장굴" },
+  "p_hyeopjae_cave": { name: "협재굴 & 쌍용굴", category: "명소/여행지", lat: 33.3936, lng: 126.2394, desc: "한림공원 안에 있는 두 개의 용암동굴. 협재굴은 종유석, 쌍용굴은 용이 승천한 듯한 형상이 특징.", url: "https://map.naver.com/p/search/한림공원%20협재굴%20쌍용굴" },
+  "p_arte_museum": { name: "아르떼뮤지엄 제주", category: "명소/여행지", lat: 33.4614, lng: 126.3607, desc: "애월의 옛 스피커 공장을 개조한 대형 몰입형 미디어아트 전시관. 빛과 소리로 표현한 자연 테마 작품들.", url: "https://map.naver.com/p/search/아르떼뮤지엄%20제주" },
+  "p_bunker_light": { name: "빛의 벙커", category: "명소/여행지", lat: 33.4478, lng: 126.8353, desc: "옛 국가 통신시설 벙커를 활용한 몰입형 미디어아트 전시관. 명화를 벽·바닥에 투사하는 프로젝션 매핑이 특징.", url: "https://map.naver.com/p/search/빛의벙커" },
+  "p_bonte_museum": { name: "본태박물관", category: "명소/여행지", lat: 33.3038302, lng: 126.3925024, desc: "건축가 안도 다다오가 설계한 안덕면의 미술관. 노출콘크리트 건축미와 한국 전통공예·현대미술 전시가 어우러짐.", url: "https://map.naver.com/p/search/본태박물관" }
+};
+
+// 🌟 소분류별 직관적인 컬러 팔레트 정의 (배열 및 텍스트 매칭 완벽 일치)
+const CAT_PALETTE = {
+  "명소/여행지": { bg: "#E2EFEF", text: "#1C6E74", pin: "#25939A" },
+  "카페/디저트": { bg: "#FDF5E6", text: "#D48D28", pin: "#F0A500" },
+  "고기 (흑돼지/소고기)": { bg: "#FCE8E5", text: "#C4321F", pin: "#E34A33" },
+  "국/찌개 (해장국)": { bg: "#F0EBF2", text: "#6B5282", pin: "#8E6DAE" },
+  "해산물/향토음식": { bg: "#E5F0FA", text: "#2A6FA8", pin: "#3D8CDA" },
+  "양식/기타": { bg: "#EBF0E6", text: "#5A7350", pin: "#759668" },
+  "돈가스/분식": { bg: "#F5EBDD", text: "#8A5A26", pin: "#A6763D" }
+};
+
+window.activeExploreKeys = new Set();
+
+// --- 탭 컨트롤 ---
+const buttons = { schedule: document.getElementById('btn-schedule'), explore: document.getElementById('btn-explore'), packing: document.getElementById('btn-packing') };
+const views = { schedule: document.getElementById('view-schedule'), explore: document.getElementById('view-explore'), packing: document.getElementById('view-packing') };
+
+function showView(name) {
+  Object.keys(buttons).forEach(k => {
+    buttons[k].classList.toggle('active', k === name);
+    views[k].classList.toggle('active', k === name);
+  });
+}
+Object.keys(buttons).forEach(k => buttons[k].addEventListener('click', () => showView(k)));
+
+// --- 장소 탐색 리스트 그리기 ---
+function renderExploreList() {
+  const wrapper = document.getElementById("explore-wrapper");
+  wrapper.innerHTML = "";
+
+  const activeCats = Array.from(document.querySelectorAll('#category-chips .chip.on')).map(c => c.dataset.category);
+  const searchEl = document.getElementById('explore-search');
+  const searchQuery = (searchEl ? searchEl.value : '').trim().toLowerCase();
+
+  let matchedKeys = Object.keys(ALL_PLACES).filter(key => {
+    const place = ALL_PLACES[key];
+    if (window.hiddenPlaceKeys && window.hiddenPlaceKeys.has(key)) return false;
+    if (!activeCats.includes('all') && !activeCats.includes(place.category)) return false;
+    if (searchQuery && !(place.name.toLowerCase().includes(searchQuery) || place.desc.toLowerCase().includes(searchQuery))) return false;
+    return true;
+  });
+
+  const sortMode = window.exploreSortMode || 'name';
+  if (sortMode === 'name') {
+    matchedKeys.sort((a, b) => ALL_PLACES[a].name.localeCompare(ALL_PLACES[b].name, 'ko'));
+  } else if (sortMode === 'recent') {
+    matchedKeys.sort((a, b) => (ALL_PLACES[b].createdAt || 0) - (ALL_PLACES[a].createdAt || 0));
+  }
+
+  matchedKeys.forEach(key => {
+    const place = ALL_PLACES[key];
+    const isChecked = window.activeExploreKeys.has(key) ? 'checked' : '';
+    const pal = CAT_PALETTE[place.category] || { bg: "#eee", text: "#555", pin: "#888" };
+
+    wrapper.innerHTML += `
+      <div class="place-card">
+        <div class="info">
+          <div class="name-wrap">
+            <span class="name">${place.name}</span>
+            <span class="category" style="background:${pal.bg}; color:${pal.text};">${place.category}</span>
+            <button class="card-delete-btn" onclick="window.hidePlace('${key}', '${place.name.replace(/'/g, "\\'")}')">✕</button>
+          </div>
+          <p class="desc">${place.desc}</p>
+          <a href="javascript:void(0)" onclick="window.openKakaoDetailByName('${window.escJs(place.name)}', ${place.lat}, ${place.lng})" class="kakao-link">🗺️ 카카오맵에서 보기</a>
+          <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(place.name)}', ${place.lat}, ${place.lng})" class="nav-link">🧭 길찾기 (모바일 전용)</a>
+        </div>
+        <label class="switch">
+          <input type="checkbox" class="toggle-map-btn" data-key="${key}" ${isChecked}>
+          <span class="slider"></span>
+        </label>
+      </div>
+    `;
+  });
+
+  // 숨긴 장소가 있으면, 리스트 맨 아래에 복원 링크 표시
+  const hiddenKeys = window.hiddenPlaceKeys ? Array.from(window.hiddenPlaceKeys) : [];
+  if (hiddenKeys.length > 0) {
+    wrapper.innerHTML += `
+      <div class="hidden-restore-wrap">
+        <a href="#" class="hidden-toggle-link" id="hidden-toggle-link">숨긴 장소 ${hiddenKeys.length}개 보기 ↓</a>
+        <div class="hidden-list" id="hidden-list" style="display:none;"></div>
+      </div>
+    `;
+  }
+
+  const hiddenToggleLink = document.getElementById('hidden-toggle-link');
+  if (hiddenToggleLink) {
+    hiddenToggleLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const listEl = document.getElementById('hidden-list');
+      const isOpen = listEl.style.display !== 'none';
+      if (isOpen) {
+        listEl.style.display = 'none';
+        hiddenToggleLink.textContent = `숨긴 장소 ${hiddenKeys.length}개 보기 ↓`;
+      } else {
+        listEl.innerHTML = hiddenKeys.map(k => {
+          const p = ALL_PLACES[k];
+          const nm = p ? p.name : k;
+          return `<div class="hidden-item"><span>${nm}</span><button class="restore-btn" data-key="${k}">복원</button></div>`;
+        }).join('');
+        listEl.style.display = 'block';
+        hiddenToggleLink.textContent = `숨긴 장소 접기 ↑`;
+        listEl.querySelectorAll('.restore-btn').forEach(btn => {
+          btn.addEventListener('click', () => window.restorePlace(btn.dataset.key));
+        });
+      }
+    });
+  }
+
+  document.querySelectorAll('.toggle-map-btn').forEach(btn => {
+    btn.addEventListener('change', (e) => {
+      const key = e.target.dataset.key;
+      if (window.clearSearchResultMarker) window.clearSearchResultMarker();
+      if (e.target.checked) {
+        window.activeExploreKeys.add(key);
+        window.drawExploreMarkers(); 
+        
+        const place = ALL_PLACES[key];
+        if (place) {
+          if (window.innerWidth <= 800) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+          window.flyToPlace(place.lat, place.lng);
+          setTimeout(() => {
+            const marker = window.exploreMarkers[key];
+            const iw = window.exploreInfoWindows[key];
+            if (marker && iw) {
+              if (window.lastInfoWindow) window.lastInfoWindow.close();
+              iw.open(window.mainMap, marker);
+              window.lastInfoWindow = iw;
+            }
+          }, 450);
+        }
+      } else {
+        window.activeExploreKeys.delete(key);
+        window.drawExploreMarkers(); 
+      }
+      updateMasterToggle();
+    });
+  });
+  updateMasterToggle();
+}
+
+function updateMasterToggle() {
+  const visibleToggles = Array.from(document.querySelectorAll('.toggle-map-btn'));
+  const masterToggle = document.getElementById('toggle-all-explore');
+  if (!masterToggle) return;
+  if (visibleToggles.length === 0) { masterToggle.checked = false; return; }
+  masterToggle.checked = visibleToggles.every(btn => btn.checked);
+}
+
+document.querySelectorAll('#category-chips .chip').forEach(chip => {
+  chip.addEventListener('click', (e) => {
+    const cat = e.target.dataset.category;
+    if (cat === 'all') {
+      const isTurningOn = !e.target.classList.contains('on');
+      document.querySelectorAll('#category-chips .chip').forEach(c => c.classList.toggle('on', isTurningOn));
+    } else {
+      e.target.classList.toggle('on');
+      const allCats = Array.from(document.querySelectorAll('#category-chips .chip')).filter(c => c.dataset.category !== 'all');
+      document.querySelector('#category-chips .chip[data-category="all"]').classList.toggle('on', allCats.every(c => c.classList.contains('on')));
+    }
+    renderExploreList();
+    window.drawExploreMarkers();
+  });
+});
+
+document.getElementById('toggle-all-explore').addEventListener('change', (e) => {
+  const isChecked = e.target.checked;
+  document.querySelectorAll('.toggle-map-btn').forEach(btn => {
+    if (btn.checked !== isChecked) {
+      btn.checked = isChecked;
+      const key = btn.dataset.key;
+      if (isChecked) window.activeExploreKeys.add(key);
+      else window.activeExploreKeys.delete(key);
+    }
+  });
+  window.drawExploreMarkers();
+});
+
+document.getElementById('explore-search').addEventListener('input', renderExploreList);
+
+// --- 정렬 토글 (가나다순 / 최근 추가순) ---
+window.exploreSortMode = 'name';
+document.querySelectorAll('.sort-link').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sort-link').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    window.exploreSortMode = btn.dataset.sort;
+    renderExploreList();
+  });
+});
+
+// --- 지도 크게보기 토글 (모바일 전용) ---
+document.getElementById('map-expand-btn').addEventListener('click', (e) => {
+  const expanded = document.body.classList.toggle('map-expanded');
+  e.target.textContent = expanded ? '📋 리스트 보기' : '🔎 지도 크게보기';
+  setTimeout(() => { if (window.mainMap) window.mainMap.relayout(); }, 320);
+});
+
+renderExploreList(); 
+
+// --- 오늘 날짜 자동 하이라이트 ---
+(function setupInitialView() {
+  const TRIP_DAYS = {
+    d1: new Date(2026, 7, 3),  // 8/3
+    d2: new Date(2026, 7, 4),  // 8/4
+    d3: new Date(2026, 7, 5),  // 8/5
+    d4: new Date(2026, 7, 6),  // 8/6
+    d5: new Date(2026, 7, 7),  // 8/7
+  };
+  const now = new Date();
+  const todayKey = Object.keys(TRIP_DAYS).find(key => {
+    const d = TRIP_DAYS[key];
+    return now.getFullYear() === d.getFullYear() && now.getMonth() === d.getMonth() && now.getDate() === d.getDate();
+  });
+
+  // 지도 기본값: 오늘이 여행 기간이면 그 날짜만, 아니면 1일차만 표시
+  const targetDay = todayKey || 'd1';
+  document.querySelectorAll('.m-chip.schedule-chip').forEach(chip => chip.classList.remove('on'));
+  const targetChip = document.querySelector(`.m-chip.schedule-chip[data-day="${targetDay}"]`);
+  if (targetChip) targetChip.classList.add('on');
+
+  // 일정 리스트 기본 상태: 오늘(또는 1일차)만 펼치고 나머지는 접어둠
+  ['d1','d2','d3','d4','d5'].forEach(day => {
+    const sec = document.getElementById(`sec-${day}`);
+    if (sec) sec.classList.toggle('collapsed', day !== targetDay);
+  });
+
+  if (!todayKey) return; // 여행 기간이 아니면 '오늘' 하이라이트는 표시하지 않음
+
+  const section = document.getElementById(`sec-${todayKey}`);
+  const badge = document.getElementById(`badge-${todayKey}`);
+  if (section) section.classList.add('is-today');
+  if (badge) badge.style.display = 'inline-block';
+
+  // 일정 탭이 기본 탭이니, 로드 시 오늘 섹션으로 살짝 스크롤
+  setTimeout(() => {
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+})();
+
+// --- 일정 섹션 접기/펼치기 ---
+document.querySelectorAll('.day-head').forEach(head => {
+  head.addEventListener('click', () => {
+    const sec = head.closest('.day-section');
+    if (sec) sec.classList.toggle('collapsed');
+  });
+});
+
+document.getElementById('toggle-all-days').addEventListener('click', (e) => {
+  const sections = document.querySelectorAll('.day-section');
+  const allExpanded = Array.from(sections).every(s => !s.classList.contains('collapsed'));
+  sections.forEach(s => s.classList.toggle('collapsed', allExpanded));
+  e.target.textContent = allExpanded ? '전체 펼치기' : '전체 접기';
+});
+
+// --- 날씨 (Open-Meteo, API 키 불필요) ---
+(async function loadWeather() {
+  const BASE_LAT = 33.2448, BASE_LNG = 126.5644; // 서귀포 숙소 기준
+  const DAY_DATES = { d1: '2026-08-03', d2: '2026-08-04', d3: '2026-08-05', d4: '2026-08-06', d5: '2026-08-07' };
+  const SLOTS = ['09:00', '12:00', '15:00', '18:00'];
+  const SLOT_LABELS = ['아침', '점심', '오후', '저녁'];
+
+  function weatherEmoji(code) {
+    if (code === 0) return '☀️';
+    if ([1, 2, 3].includes(code)) return '⛅';
+    if ([45, 48].includes(code)) return '🌫️';
+    if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return '🌧️';
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return '❄️';
+    if ([95, 96, 99].includes(code)) return '⛈️';
+    return '🌡️';
+  }
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${BASE_LAT}&longitude=${BASE_LNG}&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Asia%2FSeoul&forecast_days=16`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const dailyDates = data.daily.time;
+    const hourlyTimes = data.hourly.time;
+
+    Object.keys(DAY_DATES).forEach(dayKey => {
+      const dateStr = DAY_DATES[dayKey];
+      const badgeEl = document.getElementById(`weather-${dayKey}`);
+      const detailEl = document.getElementById(`weather-detail-${dayKey}`);
+      if (!badgeEl) return;
+
+      const idx = dailyDates.indexOf(dateStr);
+      if (idx === -1) {
+        badgeEl.innerHTML = `<span class="weather-placeholder">🌤️ 예보 준비 중</span>`;
+        badgeEl.style.display = 'inline-flex';
+        return;
+      }
+
+      const max = Math.round(data.daily.temperature_2m_max[idx]);
+      const min = Math.round(data.daily.temperature_2m_min[idx]);
+      const emoji = weatherEmoji(data.daily.weathercode[idx]);
+
+      badgeEl.innerHTML = `${emoji} ${max}° / ${min}°`;
+      badgeEl.style.display = 'inline-flex';
+
+      let slotHtml = '';
+      SLOTS.forEach((t, i) => {
+        const hIdx = hourlyTimes.indexOf(`${dateStr}T${t}`);
+        if (hIdx === -1) {
+          slotHtml += `<div class="wd-slot"><div class="wd-time">${SLOT_LABELS[i]}</div><div>-</div></div>`;
+        } else {
+          const temp = Math.round(data.hourly.temperature_2m[hIdx]);
+          slotHtml += `<div class="wd-slot"><div class="wd-time">${SLOT_LABELS[i]}</div><div>${weatherEmoji(data.hourly.weathercode[hIdx])}</div><div class="wd-temp">${temp}°</div></div>`;
+        }
+      });
+      if (detailEl) detailEl.innerHTML = slotHtml;
+
+      badgeEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!detailEl) return;
+        detailEl.style.display = (detailEl.style.display === 'none' || !detailEl.style.display) ? 'flex' : 'none';
+      });
+    });
+  } catch (e) {
+    console.error('날씨 정보를 불러오지 못했어요:', e);
+  }
+})();
+
+// --- 서비스 워커 등록 (안드로이드 설치 프롬프트 활성화용) ---
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// --- 홈 화면 추가 안내 (iOS 배너 / 안드로이드 설치 버튼) ---
+// DOM이 다 만들어진 뒤에 실행되도록 감쌈 (배너 HTML이 이 스크립트보다 뒤에 있어서 필요함)
+document.addEventListener('DOMContentLoaded', function setupInstallPrompt() {
+  const banner = document.getElementById('install-banner');
+  const textEl = document.getElementById('install-banner-text');
+  const closeBtn = document.getElementById('install-banner-close');
+  if (!banner || !textEl || !closeBtn) return; // 요소가 없으면 조용히 건너뜀
+
+  const isStandalone = window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+  if (isStandalone) return; // 이미 홈 화면에서 열었으면 아무것도 안 함
+
+  if (localStorage.getItem('installBannerDismissed') === '1') return;
+
+  closeBtn.addEventListener('click', () => {
+    banner.classList.remove('show');
+    localStorage.setItem('installBannerDismissed', '1');
+  });
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  if (isIOS) {
+    textEl.innerHTML = '아래 <b>공유 버튼(⬆️)</b> → <b>"홈 화면에 추가"</b>를 누르면 앱처럼 바로 열 수 있어요!';
+    setTimeout(() => banner.classList.add('show'), 1200);
+    return;
+  }
+
+  // 안드로이드: 브라우저가 설치 가능하다고 판단하면 beforeinstallprompt 이벤트가 옴
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    textEl.innerHTML = '이 버튼을 누르면 <b>홈 화면에 바로 설치</b>돼요!';
+    const installBtn = document.createElement('button');
+    installBtn.className = 'install-btn';
+    installBtn.textContent = '설치하기';
+    installBtn.addEventListener('click', async () => {
+      banner.classList.remove('show');
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+    });
+    banner.insertBefore(installBtn, closeBtn);
+    setTimeout(() => banner.classList.add('show'), 1200);
+  });
+});
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, query, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBEUkwBCFv0ICfJ92AG_zK6Xkazx4ejchE",
+    authDomain: "planning-with-ai-48e01.firebaseapp.com",
+    projectId: "planning-with-ai-48e01",
+    storageBucket: "planning-with-ai-48e01.firebasestorage.app",
+    messagingSenderId: "291204006646",
+    appId: "1:291204006646:web:8418755adf9f1d747ba2d7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 오프라인 캐싱: 인터넷이 끊겨도 마지막으로 불러온 데이터를 그대로 볼 수 있게 함
+  enableIndexedDbPersistence(db).catch((err) => {
+    // 탭을 여러 개 열어둔 경우(failed-precondition)나 브라우저 미지원(unimplemented)이면 그냥 무시하고 온라인 모드로 동작
+    console.warn('오프라인 캐싱을 켤 수 없어요:', err.code);
+  });
+
+  // -----------------------------------------------------
+  // 0. 신원 확인 (최초 1회) + 마지막 접속 표시 (presence)
+  // -----------------------------------------------------
+  const presenceRef = collection(db, "presence");
+
+  function relativeTime(ts) {
+    if (!ts) return '-';
+    const diffMs = Date.now() - ts;
+    const min = Math.floor(diffMs / 60000);
+    if (min < 1) return '방금';
+    if (min < 60) return `${min}분 전`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr}시간 전`;
+    const day = Math.floor(hr / 24);
+    return `${day}일 전`;
+  }
+
+  const presenceLastSeen = { seunghyun: null, soyoung: null };
+
+  const ONLINE_THRESHOLD_MS = 90 * 1000; // 90초 이내 신호면 온라인으로 간주
+
+  function formatPresence(name, ts) {
+    if (ts && (Date.now() - ts) <= ONLINE_THRESHOLD_MS) {
+      return `🟢 ${name} 온라인`;
+    }
+    return `${name} ${relativeTime(ts)}`;
+  }
+
+  function renderPresence() {
+    const shEl = document.getElementById('presence-seunghyun');
+    const syEl = document.getElementById('presence-soyoung');
+    if (shEl) shEl.textContent = formatPresence('승현', presenceLastSeen.seunghyun);
+    if (syEl) syEl.textContent = formatPresence('소영', presenceLastSeen.soyoung);
+  }
+
+  onSnapshot(presenceRef, (snapshot) => {
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      if (presenceLastSeen.hasOwnProperty(docSnap.id)) {
+        presenceLastSeen[docSnap.id] = data.lastSeen || null;
+      }
+    });
+    renderPresence();
+  });
+
+  setInterval(renderPresence, 30000); // 시간 표시 자동 갱신 (30초마다)
+
+  async function markPresence(who) {
+    await setDoc(doc(db, "presence", who), { lastSeen: Date.now() }, { merge: true });
+  }
+
+  function startPresence(who) {
+    markPresence(who);
+    setInterval(() => markPresence(who), 60000); // 페이지 열려있는 동안 1분마다 갱신
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') markPresence(who);
+    });
+  }
+
+  const myIdentity = localStorage.getItem('tripIdentity');
+  if (myIdentity) {
+    startPresence(myIdentity);
+  } else {
+    document.getElementById('identity-modal').classList.add('show');
+  }
+
+  document.querySelectorAll('.identity-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const who = btn.dataset.who;
+      localStorage.setItem('tripIdentity', who);
+      document.getElementById('identity-modal').classList.remove('show');
+      startPresence(who);
+    });
+  });
+
+  // -----------------------------------------------------
+  // A. 준비물 체크리스트 (v3 창고)
+  // -----------------------------------------------------
+  const packingRef = collection(db, "packing_items_v3");
+  onSnapshot(query(packingRef, orderBy("order", "asc")), (snapshot) => {
+    if (snapshot.empty && !window.packSeeded) {
+        window.packSeeded = true;
+        ["신분증/여권", "수영복/래쉬가드", "비상약", "보조배터리"].forEach((item, idx) => {
+            addDoc(packingRef, { text: item, seunghyun: false, soyoung: false, order: Date.now() + idx });
+        });
+    }
+
+    const packListEl = document.getElementById("packing-list-ul");
+    packListEl.innerHTML = ""; 
+    snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const id = docSnap.id;
+        const li = document.createElement("li");
+        
+        li.className = "packing-item " + ((data.seunghyun && data.soyoung) ? "done" : "");
+        li.innerHTML = `
+          <span class="packing-text">${data.text}</span>
+          <div class="user-checks">
+            <label class="user-check-label"><input type="checkbox" id="sh-${id}" ${data.seunghyun ? "checked" : ""}> 승현</label>
+            <label class="user-check-label soyoung"><input type="checkbox" id="sy-${id}" ${data.soyoung ? "checked" : ""}> 소영</label>
+            <button class="packing-delete">✕</button>
+          </div>
+        `;
+        li.querySelector(`#sh-${id}`).addEventListener("change", (e) => updateDoc(doc(db, "packing_items_v3", id), { seunghyun: e.target.checked }));
+        li.querySelector(`#sy-${id}`).addEventListener("change", (e) => updateDoc(doc(db, "packing_items_v3", id), { soyoung: e.target.checked }));
+        li.querySelector(".packing-delete").addEventListener("click", () => {
+          if (!confirm(`"${data.text}"을(를) 목록에서 삭제할까요?`)) return;
+          deleteDoc(doc(db, "packing_items_v3", id));
+        });
+        packListEl.appendChild(li);
+    });
+  });
+
+  async function addPackingItem() {
+      const inputEl = document.getElementById("packing-input");
+      if (!inputEl.value.trim()) return;
+      await addDoc(packingRef, { text: inputEl.value.trim(), seunghyun: false, soyoung: false, order: Date.now() });
+      inputEl.value = "";
+  }
+
+  document.getElementById("btn-add-packing").addEventListener("click", addPackingItem);
+  document.getElementById("packing-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") addPackingItem();
+  });
+
+  // -----------------------------------------------------
+  // B. 지도 초기화 (카카오맵)
+  // -----------------------------------------------------
+  window.mainMap = new kakao.maps.Map(document.getElementById('jejumap'), {
+    center: new kakao.maps.LatLng(33.36, 126.52),
+    level: 10
+  });
+  window.mainMap.setZoomable(true);
+
+  window.dayLayers = {};       // { d1: { polyline, overlays: [] }, ... }
+  window.exploreMarkers = {};  // { placeKey: kakao.maps.Marker }
+  window.exploreLabels = {};   // { placeKey: kakao.maps.CustomOverlay } 작은 지명 라벨
+  window.lastInfoWindow = null;
+  window.searchResultMarker = null;
+  const DAY_COLORS = { d1: '#E37B34', d2: '#1C6E74', d3: '#2A6FA8', d4: '#5A7350', d5: '#8B4B6B' };
+
+  // 검색해서 뜬 임시 핀 정리 (다른 팝업이 뜨거나 지도 빈 곳을 누르면 사라짐)
+  window.clearSearchResultMarker = function() {
+    if (window.searchResultMarker) {
+      window.searchResultMarker.setMap(null);
+      window.searchResultMarker = null;
+    }
+  };
+  kakao.maps.event.addListener(window.mainMap, 'click', () => {
+    window.clearSearchResultMarker();
+    if (window.lastInfoWindow) { window.lastInfoWindow.close(); window.lastInfoWindow = null; }
+    if (typeof restoreHiddenLabels === 'function') restoreHiddenLabels();
+  });
+
+  function makeDotImage(color) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"><circle cx="11" cy="11" r="8" fill="${color}" stroke="white" stroke-width="2.5"/></svg>`;
+    const url = 'data:image/svg+xml;base64,' + btoa(svg);
+    return new kakao.maps.MarkerImage(url, new kakao.maps.Size(22, 22), { offset: new kakao.maps.Point(11, 11) });
+  }
+
+  // 장소 탐색에서 스위치를 켰을 때, 지도를 그 위치로 약간 확대하며 이동
+  window.flyToPlace = function(lat, lng) {
+    const pos = new kakao.maps.LatLng(lat, lng);
+    const isMobile = window.innerWidth <= 768; // 1. 화면 가로 크기가 768px 이하(모바일)인지 확인
+    const baseLevel = isMobile ? 10 : 9;       // 2. 모바일이면 레벨 10, 노트북/PC면 레벨 9로 설정
+    const targetLevel = Math.min(window.mainMap.getLevel(), baseLevel); // 3. 계산된 기준 적용
+    window.mainMap.setLevel(targetLevel, { animate: { duration: 400 } });
+    window.mainMap.panTo(pos);
+  };
+
+  window.addFromPopup = async function(placeKey) {
+    const day = document.getElementById(`popup-sel-${placeKey}`).value;
+    if(!day) return;
+    await addDoc(collection(db, "trip_schedule_v6"), { day: day, placeId: placeKey, time: "", order: Date.now() });
+    window.showToast(`${ALL_PLACES[placeKey].name}이(가) 일정에 추가되었습니다!`);
+    if (window.lastInfoWindow) window.lastInfoWindow.close();
+    document.getElementById('btn-schedule').click();
+  };
+
+  // 일정 지도 위 마커(번호+이름표) 클릭 시 카카오맵/길찾기 링크 보여주기
+  window.openStopLinks = function(name, lat, lng) {
+    if (window.lastInfoWindow) window.lastInfoWindow.close();
+    window.clearSearchResultMarker();
+    const content = `
+      <div class="popup-content" style="padding:10px; min-width:150px;">
+        <h3 class="popup-title" style="margin-bottom:8px;">${name}</h3>
+        <div class="link-row">
+          <a href="javascript:void(0)" onclick="window.openKakaoDetailByName('${window.escJs(name)}', ${lat}, ${lng})" class="kakao-link">🗺️ 카카오맵</a>
+          <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(name)}', ${lat}, ${lng})" class="nav-link">🧭 길찾기 (모바일 전용)</a>
+        </div>
+      </div>
+    `;
+    const iw = new kakao.maps.InfoWindow({
+      position: new kakao.maps.LatLng(lat, lng),
+      content,
+      removable: true
+    });
+    iw.open(window.mainMap);
+    window.lastInfoWindow = iw;
+  };
+
+  // -----------------------------------------------------
+  // B-2. 새로운 장소 검색 (카카오 로컬 검색 + 내 리스트에 저장)
+  // -----------------------------------------------------
+  const placesService = new kakao.maps.services.Places(window.mainMap);
+
+  // 고정 리스트 장소를 누르면, 이름+좌표로 실시간 검색해서 정확한 카카오맵 상세페이지를 찾아서 연결
+  window.openKakaoDetailByName = function(name, lat, lng) {
+    const fallback = window.kakaoMapLink(name);
+    // 클릭 직후(사용자 제스처가 살아있을 때) 빈 탭을 먼저 열어둬서, 검색 완료 후 채워도 팝업 차단이 안 걸리게 함
+    const newTab = window.open('', '_blank');
+    placesService.keywordSearch(name, (data, status) => {
+      const url = (status === kakao.maps.services.Status.OK && data.length > 0 && data[0].place_url) ? data[0].place_url : fallback;
+      if (newTab) {
+        newTab.location.href = url;
+      } else {
+        window.open(url, '_blank');
+      }
+    }, { location: new kakao.maps.LatLng(lat, lng), radius: 1000, size: 1 });
+  };
+  window.pendingSearchResults = {};
+
+  function mapKakaoCategoryToBucket(kakaoPlace) {
+    const code = kakaoPlace.category_group_code;
+    const name = kakaoPlace.category_name || '';
+    if (code === 'CE7') return '카페/디저트';
+    if (code === 'AT4' || code === 'AD5') return '명소/여행지';
+    if (/돈까스|돈가스|분식|우동|라멘|스시|초밥|일식/.test(name)) return '돈가스/분식';
+    if (/고기|육류|흑돼지|소고기|삼겹살/.test(name)) return '고기 (흑돼지/소고기)';
+    if (/해장국|국밥|찌개|탕/.test(name)) return '국/찌개 (해장국)';
+    if (/해산물|수산|향토|횟집|물회|어시장/.test(name)) return '해산물/향토음식';
+    if (code === 'FD6') return '양식/기타';
+    return '명소/여행지';
+  }
+
+  window.showSearchResultPopup = function(d) {
+    const lat = parseFloat(d.y), lng = parseFloat(d.x);
+    const category = mapKakaoCategoryToBucket(d);
+    const pal = CAT_PALETTE[category] || { bg: "#eee", text: "#555", pin: "#888" };
+    const customKey = 'k_' + d.id;
+    const kakaoDetailUrl = d.place_url || window.kakaoMapLink(d.place_name);
+
+    if (window.lastInfoWindow) window.lastInfoWindow.close();
+    window.flyToPlace(lat, lng);
+
+    if (window.searchResultMarker) window.searchResultMarker.setMap(null);
+    const marker = new kakao.maps.Marker({ position: new kakao.maps.LatLng(lat, lng), image: makeDotImage(pal.pin || pal.text) });
+    marker.setMap(window.mainMap);
+    window.searchResultMarker = marker;
+
+    window.pendingSearchResults[customKey] = {
+      name: d.place_name, lat, lng, category,
+      desc: (d.category_name || '카카오맵 검색 결과'),
+      createdAt: Date.now()
+    };
+
+    const popupHtml = `
+      <div class="popup-content">
+        <div class="popup-title-row">
+          <h3 class="popup-title">${d.place_name}</h3>
+          <span class="popup-cat" style="background:${pal.bg}; color:${pal.text};">${category}</span>
+        </div>
+        <div class="popup-controls">
+          <select id="popup-sel-${customKey}" class="popup-select">
+            <option value="d1">1일 차</option>
+            <option value="d2">2일 차</option>
+            <option value="d3">3일 차</option>
+            <option value="d4">4일 차</option>
+            <option value="d5">5일 차</option>
+          </select>
+          <button class="popup-btn" onclick="window.addSearchResultToSchedule('${customKey}')">추가</button>
+        </div>
+        <button class="popup-save-btn" onclick="window.saveSearchResultToList('${customKey}')">⭐ 내 리스트에 저장</button>
+        <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(d.place_name)}', ${lat}, ${lng})" class="nav-link">🧭 길찾기 (모바일 전용)</a>
+        ${d.place_url ? `<a href="${kakaoDetailUrl}" target="_blank" class="kakao-detail-link">🗺️ 카카오맵에서 사진·평점 보기</a>` : `<a href="${kakaoDetailUrl}" target="_blank" class="kakao-link">🗺️ 카카오맵에서 보기</a>`}
+      </div>
+    `;
+    const iw = new kakao.maps.InfoWindow({ content: `<div style="padding:10px;">${popupHtml}</div>`, removable: true });
+    iw.open(window.mainMap, marker);
+    window.lastInfoWindow = iw;
+  };
+
+  window.saveSearchResultToList = async function(customKey) {
+    const data = window.pendingSearchResults[customKey];
+    if (!data) return;
+    await setDoc(doc(db, "custom_places", customKey), data);
+    window.showToast(`${data.name}이(가) 내 리스트에 저장되었어요!`);
+  };
+
+  window.addSearchResultToSchedule = async function(customKey) {
+    const data = window.pendingSearchResults[customKey];
+    if (!data) return;
+    const day = document.getElementById(`popup-sel-${customKey}`).value;
+    await setDoc(doc(db, "custom_places", customKey), data); // 일정 참조를 위해 리스트에도 함께 저장
+    await addDoc(collection(db, "trip_schedule_v6"), { day, placeId: customKey, time: "", order: Date.now() });
+    window.showToast(`${data.name}이(가) 일정에 추가되었습니다!`);
+    if (window.lastInfoWindow) window.lastInfoWindow.close();
+    document.getElementById('btn-schedule').click();
+  };
+
+  window.hidePlace = async function(key, name) {
+    if (!confirm(`"${name}"을(를) 리스트에서 숨길까요?\n지도/일정에서도 안 보이게 되고, 나중에 리스트 맨 아래에서 복원할 수 있어요.`)) return;
+    await setDoc(doc(db, "hidden_places", key), { name, hiddenAt: Date.now() });
+  };
+
+  window.restorePlace = async function(key) {
+    await deleteDoc(doc(db, "hidden_places", key));
+  };
+
+  window.hiddenPlaceKeys = new Set();
+  onSnapshot(collection(db, "hidden_places"), (snapshot) => {
+    const newHidden = new Set();
+    snapshot.forEach(docSnap => newHidden.add(docSnap.id));
+    window.hiddenPlaceKeys = newHidden;
+    newHidden.forEach(id => window.activeExploreKeys.delete(id));
+    renderExploreList();
+    window.drawExploreMarkers();
+    if (typeof rebuildScheduleTemp === 'function') rebuildScheduleTemp();
+  });
+
+  // 저장된 커스텀 장소들을 실시간으로 ALL_PLACES에 병합 (추가/수정/삭제 모두 반영)
+  let knownCustomKeys = new Set();
+  onSnapshot(collection(db, "custom_places"), (snapshot) => {
+    let changed = false;
+    const currentKeys = new Set();
+
+    snapshot.forEach(docSnap => {
+      const id = docSnap.id;
+      const data = docSnap.data();
+      currentKeys.add(id);
+      if (!ALL_PLACES[id] || ALL_PLACES[id].name !== data.name) {
+        ALL_PLACES[id] = data;
+        changed = true;
+      }
+    });
+
+    // 이전엔 있었는데 이번엔 스냅샷에 없는 것 = 삭제된 것
+    knownCustomKeys.forEach(id => {
+      if (!currentKeys.has(id)) {
+        delete ALL_PLACES[id];
+        window.activeExploreKeys.delete(id);
+        changed = true;
+      }
+    });
+    knownCustomKeys = currentKeys;
+
+    if (changed) {
+      renderExploreList();
+      window.drawExploreMarkers();
+      if (typeof rebuildScheduleTemp === 'function') rebuildScheduleTemp();
+    }
+  });
+
+  // 리스트(ALL_PLACES)에 이미 있는 장소를 검색으로 찾았을 때 -> 스위치 켜는 것과 동일하게 동작
+  window.activateStarredPlace = function(key) {
+    window.clearSearchResultMarker();
+    window.activeExploreKeys.add(key);
+    window.drawExploreMarkers();
+    renderExploreList();
+
+    const place = ALL_PLACES[key];
+    if (!place) return;
+    window.flyToPlace(place.lat, place.lng);
+    setTimeout(() => {
+      const marker = window.exploreMarkers[key];
+      const iw = window.exploreInfoWindows[key];
+      if (marker && iw) {
+        if (window.lastInfoWindow) window.lastInfoWindow.close();
+        iw.open(window.mainMap, marker);
+        window.lastInfoWindow = iw;
+      }
+    }, 450);
+  };
+
+  // 검색창 입력 처리 (디바운스)
+  const mapSearchInput = document.getElementById('map-search-input');
+  const mapSearchResults = document.getElementById('map-search-results');
+  let searchDebounceTimer;
+
+  mapSearchInput.addEventListener('input', () => {
+    clearTimeout(searchDebounceTimer);
+    const keyword = mapSearchInput.value.trim();
+    if (!keyword) {
+      mapSearchResults.classList.remove('show');
+      mapSearchResults.innerHTML = '';
+      // 검색창을 비우면, 엔터로 지도에 뿌려둔 키워드 검색 마커도 같이 정리
+      if (window.activeKeywordSearch) {
+        window.activeKeywordSearch = null;
+        clearCategoryMarkers();
+      }
+      return;
+    }
+
+    // 1) 내 리스트(ALL_PLACES: 기존 37개 + Firestore 저장분)에서 먼저 매칭
+    const kw = keyword.toLowerCase();
+    const matchedKeys = Object.keys(ALL_PLACES).filter(k => k !== 'p_base' && ALL_PLACES[k].name.toLowerCase().includes(kw));
+    const hiddenSet = window.hiddenPlaceKeys || new Set();
+    const visibleMatches = matchedKeys.filter(k => !hiddenSet.has(k));
+    const hiddenMatches = matchedKeys.filter(k => hiddenSet.has(k));
+
+    const starredHtml = visibleMatches.length ? `
+      <div class="search-group-label">⭐ 내 리스트에 있어요</div>
+      ${visibleMatches.map(k => `
+        <div class="map-search-result-item starred" data-star-key="${k}">
+          <div class="r-name">⭐ ${ALL_PLACES[k].name}</div>
+          <div class="r-addr">${ALL_PLACES[k].category}</div>
+        </div>
+      `).join('')}
+    ` : '';
+
+    const hiddenHtml = hiddenMatches.length ? `
+      <div class="search-group-label">🙈 숨긴 장소예요 (눌러서 복원)</div>
+      ${hiddenMatches.map(k => `
+        <div class="map-search-result-item hidden-match" data-restore-key="${k}">
+          <div class="r-name">🙈 ${ALL_PLACES[k].name}</div>
+          <div class="r-addr">${ALL_PLACES[k].category} · 눌러서 복원하기</div>
+        </div>
+      `).join('')}
+    ` : '';
+
+    // 먼저 "내 리스트" 결과만 즉시 표시, 카카오 검색 결과는 도착하는 대로 아래에 이어붙임
+    mapSearchResults.innerHTML = starredHtml + hiddenHtml + `<div id="kakao-search-group"><div class="map-search-result-item" style="color:#999;">검색 중...</div></div>`;
+    mapSearchResults.classList.add('show');
+    bindStarredClicks();
+
+    searchDebounceTimer = setTimeout(() => {
+      placesService.keywordSearch(keyword, (data, status) => {
+        const kakaoGroup = document.getElementById('kakao-search-group');
+        if (!kakaoGroup) return;
+        if (status !== kakao.maps.services.Status.OK || data.length === 0) {
+          kakaoGroup.innerHTML = `<div class="map-search-result-item" style="color:#999;">카카오맵 검색 결과가 없어요</div>`;
+          return;
+        }
+        const top = data.slice(0, 8);
+        kakaoGroup.innerHTML = `
+          <div class="search-group-label">🔍 카카오맵 검색 결과</div>
+          ${top.map((d, i) => `
+            <div class="map-search-result-item" data-idx="${i}">
+              <div class="r-name">${d.place_name}</div>
+              <div class="r-addr">${d.road_address_name || d.address_name}</div>
+            </div>
+          `).join('')}
+        `;
+        kakaoGroup.querySelectorAll('.map-search-result-item[data-idx]').forEach(el => {
+          el.addEventListener('click', () => {
+            const idx = el.dataset.idx;
+            window.showSearchResultPopup(top[idx]);
+            mapSearchResults.classList.remove('show');
+            mapSearchInput.value = '';
+          });
+        });
+      }, { size: 8 });
+    }, 350);
+
+    function bindStarredClicks() {
+      mapSearchResults.querySelectorAll('.map-search-result-item[data-star-key]').forEach(el => {
+        el.addEventListener('click', () => {
+          window.activateStarredPlace(el.dataset.starKey);
+          mapSearchResults.classList.remove('show');
+          mapSearchInput.value = '';
+        });
+      });
+      mapSearchResults.querySelectorAll('.map-search-result-item[data-restore-key]').forEach(el => {
+        el.addEventListener('click', () => {
+          window.restorePlace(el.dataset.restoreKey);
+          mapSearchResults.classList.remove('show');
+          mapSearchInput.value = '';
+        });
+      });
+    }
+  });
+
+  // 엔터 누르면 지도에 마커로 뿌려주는 모드 (카테고리 검색과 같은 방식)
+  mapSearchInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const keyword = mapSearchInput.value.trim();
+    if (!keyword) return;
+
+    mapSearchResults.classList.remove('show');
+    mapSearchInput.blur();
+
+    // 카테고리 칩이 켜져있으면 끄기 (서로 배타적으로 동작)
+    document.querySelectorAll('.cat-chip').forEach(c => {
+      c.classList.remove('on');
+      c.style.background = '';
+      c.style.borderColor = '';
+    });
+    window.activeCategoryCode = null;
+    window.activeKeywordSearch = keyword;
+
+    clearCategoryMarkers();
+    searchKeywordAllPages(keyword);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.map-search-wrap')) {
+      mapSearchResults.classList.remove('show');
+    }
+  });
+
+  // -----------------------------------------------------
+  // B-3. 카테고리 빠른 검색 (음식점/카페/명소/주차장/주유소/편의점/약국)
+  // -----------------------------------------------------
+  function makeSmallDotImage(color, size) {
+    if (!size) size = (window.innerWidth <= 768) ? 30 : 18;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2-2}" fill="${color}" stroke="white" stroke-width="2.5"/></svg>`;
+    const url = 'data:image/svg+xml;base64,' + btoa(svg);
+    return new kakao.maps.MarkerImage(url, new kakao.maps.Size(size, size), { offset: new kakao.maps.Point(size/2, size/2) });
+  }
+
+  window.categoryMarkers = [];
+  window.categoryMarkerEntries = []; // [{ lat, lng, label }] - 팝업과 겹치는 이름표 판별용
+  window.hiddenNearbyLabels = [];
+  window.activeCategoryCode = null;
+  window.activeKeywordSearch = null;
+
+  function clearCategoryMarkers() {
+    window.categoryMarkers.forEach(m => m.setMap(null));
+    window.categoryMarkers = [];
+    window.categoryMarkerEntries = [];
+    window.hiddenNearbyLabels = [];
+  }
+
+  function restoreHiddenLabels() {
+    window.hiddenNearbyLabels.forEach(label => label.setMap(window.mainMap));
+    window.hiddenNearbyLabels = [];
+  }
+
+  // 특정 좌표(팝업이 뜨는 위치) 근처의 다른 이름표들을 화면 픽셀 기준으로 판단해서 숨김
+  function hideLabelsNearPopup(lat, lng) {
+    restoreHiddenLabels();
+    const proj = window.mainMap.getProjection();
+    const clickedPoint = proj.containerPointFromCoords(new kakao.maps.LatLng(lat, lng));
+    const HALF_WIDTH = 110;   // 팝업 예상 가로 폭의 절반
+    const ABOVE = 220;        // 팝업이 마커 위쪽으로 뜨는 예상 높이
+    const BELOW = 20;
+
+    window.categoryMarkerEntries.forEach(entry => {
+      if (entry.lat === lat && entry.lng === lng) return; // 클릭한 마커 자신은 제외
+      const pt = proj.containerPointFromCoords(new kakao.maps.LatLng(entry.lat, entry.lng));
+      const dx = Math.abs(pt.x - clickedPoint.x);
+      const dy = clickedPoint.y - pt.y; // 위쪽일수록 양수
+      if (dx < HALF_WIDTH && dy > -BELOW && dy < ABOVE) {
+        entry.label.setMap(null);
+        window.hiddenNearbyLabels.push(entry.label);
+      }
+    });
+  }
+
+  document.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const code = chip.dataset.code;
+      const color = chip.dataset.color;
+
+      if (window.activeCategoryCode === code) {
+        // 이미 켜진 카테고리를 다시 누르면 끄기
+        chip.classList.remove('on');
+        chip.style.background = '';
+        chip.style.borderColor = '';
+        window.activeCategoryCode = null;
+        clearCategoryMarkers();
+        return;
+      }
+
+      document.querySelectorAll('.cat-chip').forEach(c => {
+        c.classList.remove('on');
+        c.style.background = '';
+        c.style.borderColor = '';
+      });
+      chip.classList.add('on');
+      chip.style.background = color;
+      chip.style.borderColor = color;
+      window.activeCategoryCode = code;
+      window.activeKeywordSearch = null;
+      clearCategoryMarkers();
+      searchCategoryAllPages(code, color);
+    });
+  });
+
+  const MAX_CATEGORY_PAGES = 3; // 페이지당 최대 15개 x 3 = 최대 약 45개
+
+  function searchCategoryAllPages(code, color) {
+    let allResults = [];
+    let pageCount = 0;
+    placesService.categorySearch(code, (data, status, pagination) => {
+      if (status !== kakao.maps.services.Status.OK) return;
+      allResults = allResults.concat(data);
+      pageCount++;
+      if (pagination && pagination.hasNextPage && pageCount < MAX_CATEGORY_PAGES) {
+        pagination.nextPage();
+      } else {
+        renderCategoryMarkers(allResults, color);
+      }
+    }, { useMapBounds: true });
+  }
+
+  const KEYWORD_MARKER_COLOR = '#C4611F';
+
+  function searchKeywordAllPages(keyword) {
+    let allResults = [];
+    let pageCount = 0;
+    placesService.keywordSearch(keyword, (data, status, pagination) => {
+      if (status !== kakao.maps.services.Status.OK) return;
+      allResults = allResults.concat(data);
+      pageCount++;
+      if (pagination && pagination.hasNextPage && pageCount < MAX_CATEGORY_PAGES) {
+        pagination.nextPage();
+      } else {
+        renderCategoryMarkers(allResults, KEYWORD_MARKER_COLOR);
+      }
+    }, { bounds: window.mainMap.getBounds() });
+  }
+
+  function renderCategoryMarkers(data, color) {
+    data.forEach(place => {
+      const lat = parseFloat(place.y), lng = parseFloat(place.x);
+      const marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(lat, lng),
+        image: makeSmallDotImage(color)
+      });
+      marker.setMap(window.mainMap);
+      window.categoryMarkers.push(marker);
+
+      const label = new kakao.maps.CustomOverlay({
+        position: new kakao.maps.LatLng(lat, lng),
+        content: `<div style="margin-top:12px; font-size:10px; font-weight:700; color:#3A352F; background:rgba(255,255,255,0.9); padding:1px 5px; border-radius:4px; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,0.15); pointer-events:none;">${place.place_name}</div>`,
+        xAnchor: 0.5,
+        yAnchor: 0,
+        zIndex: 1
+      });
+      label.setMap(window.mainMap);
+      window.categoryMarkers.push(label);
+      window.categoryMarkerEntries.push({ lat, lng, label });
+
+      kakao.maps.event.addListener(marker, 'click', () => {
+        hideLabelsNearPopup(lat, lng);
+        window.showSearchResultPopup(place);
+      });
+    });
+  }
+
+  // 지도를 옮기거나 확대/축소하면, 켜져있는 카테고리/키워드 검색 결과를 현재 화면 기준으로 다시 검색
+  kakao.maps.event.addListener(window.mainMap, 'idle', () => {
+    if (window.activeKeywordSearch) {
+      clearCategoryMarkers();
+      searchKeywordAllPages(window.activeKeywordSearch);
+      return;
+    }
+    if (!window.activeCategoryCode) return;
+    const code = window.activeCategoryCode;
+    const chip = document.querySelector(`.cat-chip[data-code="${code}"]`);
+    const color = chip ? chip.dataset.color : '#888';
+    clearCategoryMarkers();
+    searchCategoryAllPages(code, color);
+  });
+
+  // -----------------------------------------------------
+  // C. 실시간 조립형 일정 관리 (v6 창고)
+  // -----------------------------------------------------
+  const scheduleRef = collection(db, "trip_schedule_v6");
+  window.currentScheduleDocs = { d1: [], d2: [], d3: [], d4: [], d5: [] };
+  let lastScheduleRaw = [];
+
+  function rebuildScheduleTemp() {
+    const temp = { d1: [], d2: [], d3: [], d4: [], d5: [] };
+    lastScheduleRaw.forEach(data => {
+      if (temp[data.day] && ALL_PLACES[data.placeId]) {
+        temp[data.day].push({ id: data.id, ...data, place: ALL_PLACES[data.placeId] });
+      }
+    });
+    window.currentScheduleDocs = temp;
+    renderScheduleUI();
+    window.drawScheduleLayers();
+  }
+
+  window.deleteItem = async function(docId, placeName) {
+    if (!confirm(`"${placeName}"을(를) 일정에서 삭제할까요?`)) return;
+    await deleteDoc(doc(db, "trip_schedule_v6", docId));
+  };
+  window.updateTime = async function(docId, newTime) { await updateDoc(doc(db, "trip_schedule_v6", docId), { time: newTime }); };
+  window.updateMemo = async function(docId, newMemo) { await updateDoc(doc(db, "trip_schedule_v6", docId), { memo: newMemo }); };
+  window.moveItem = async function(day, index, direction) {
+    const list = window.currentScheduleDocs[day];
+    const targetIndex = index + direction;
+    if(targetIndex < 0 || targetIndex >= list.length) return;
+    const currentOrder = list[index].order;
+    const targetOrder = list[targetIndex].order;
+    await updateDoc(doc(db, "trip_schedule_v6", list[index].id), { order: targetOrder });
+    await updateDoc(doc(db, "trip_schedule_v6", list[targetIndex].id), { order: currentOrder });
+  };
+
+  onSnapshot(query(scheduleRef, orderBy("order", "asc")), (snapshot) => {
+    if (snapshot.empty && !window.schSeeded) {
+        window.schSeeded = true;
+        const initial = [
+          { day: 'd1', id: 'p_airport', time: '18:00' }, { day: 'd1', id: 'p_base', time: '18:30' }, { day: 'd1', id: 'p_olle', time: '저녁' },
+          { day: 'd2', id: 'p_shiny', time: '오전' }, { day: 'd2', id: 'p_soesokkak', time: '오후' }, { day: 'd2', id: 'p_base', time: '저녁' },
+          { day: 'd3', id: 'p_gwangchigi', time: '오전' }, { day: 'd3', id: 'p_seopji', time: '낮' }, { day: 'd3', id: 'p_gimnyeong', time: '오후' }, { day: 'd3', id: 'p_base', time: '저녁' },
+          { day: 'd4', id: 'p_alpaca', time: '오전' }, { day: 'd4', id: 'p_aewol', time: '점심' }, { day: 'd4', id: 'p_geumneung', time: '오후' }, { day: 'd4', id: 'p_sindo', time: '해질녘' }, { day: 'd4', id: 'p_base', time: '밤' },
+          { day: 'd5', id: 'p_base', time: '오전' }, { day: 'd5', id: 'p_ihoteu', time: '오후' }, { day: 'd5', id: 'p_airport', time: '19:00' }
+        ];
+        initial.forEach((item, idx) => addDoc(scheduleRef, { day: item.day, placeId: item.id, time: item.time, order: Date.now() + idx * 1000 }));
+        return;
+    }
+
+    lastScheduleRaw = [];
+    snapshot.forEach(docSnap => {
+        lastScheduleRaw.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    rebuildScheduleTemp();
+  });
+
+  function renderScheduleUI() {
+    ['d1', 'd2', 'd3', 'd4', 'd5'].forEach(day => {
+      const container = document.getElementById(`timeline-${day}`);
+      if (!container) return;
+      
+      const list = window.currentScheduleDocs[day];
+      if (list.length === 0) {
+        container.innerHTML = `<div style="color:#888; font-size:13.5px; padding-bottom:10px;">일정이 비어있습니다. 장소 탐색 탭에서 스위치를 켜고 지도 핀을 눌러 추가해주세요.</div>`;
+        return;
+      }
+
+      let htmlString = "";
+      list.forEach((item, index) => {
+        const upDisabled = index === 0 ? 'disabled style="opacity:0.3"' : '';
+        const downDisabled = index === list.length - 1 ? 'disabled style="opacity:0.3"' : '';
+        
+        const pal = CAT_PALETTE[item.place.category] || { bg: "#eee", text: "#555" };
+
+        htmlString += `
+          <div class="stop">
+            <div class="stop-header">
+              <div class="time-box">
+                <input type="text" class="time-input" placeholder="시간 입력" value="${item.time || ''}" 
+                       onblur="window.updateTime('${item.id}', this.value)" 
+                       onkeydown="if(event.key==='Enter') this.blur();">
+              </div>
+              <div class="stop-controls">
+                <button class="btn-ctrl" onclick="window.moveItem('${day}', ${index}, -1)" ${upDisabled}>▲</button>
+                <button class="btn-ctrl" onclick="window.moveItem('${day}', ${index}, 1)" ${downDisabled}>▼</button>
+                <button class="btn-ctrl del" onclick="window.deleteItem('${item.id}', '${item.place.name.replace(/'/g, "\\'")}')">✕</button>
+              </div>
+            </div>
+            <div class="name-wrap">
+              <span class="name">${item.place.name}</span>
+              <span class="category" style="background:${pal.bg}; color:${pal.text};">${item.place.category}</span>
+            </div>
+            <div class="note">${item.place.desc}</div>
+            <a href="javascript:void(0)" onclick="window.openKakaoDetailByName('${window.escJs(item.place.name)}', ${item.place.lat}, ${item.place.lng})" class="kakao-link">🗺️ 카카오맵</a>
+            <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(item.place.name)}', ${item.place.lat}, ${item.place.lng})" class="nav-link">🧭 길찾기 (모바일 전용)</a>
+            <input type="text" class="stop-memo-input" placeholder="💬 메모 남기기 (승현/소영 둘 다 보여요)" value="${(item.memo || '').replace(/"/g, '&quot;')}"
+                   onblur="window.updateMemo('${item.id}', this.value)"
+                   onkeydown="if(event.key==='Enter') this.blur();">
+          </div>
+        `;
+      });
+      container.innerHTML = htmlString;
+    });
+  }
+
+  // -----------------------------------------------------
+  // D. 지도 렌더링 (카카오맵, 컬러 팔레트 연동)
+  // -----------------------------------------------------
+  window.drawScheduleLayers = function() {
+    Object.keys(window.dayLayers).forEach(k => {
+      const layer = window.dayLayers[k];
+      if (layer.polyline) layer.polyline.setMap(null);
+      layer.overlays.forEach(o => o.setMap(null));
+    });
+    window.dayLayers = {};
+
+    ['d1', 'd2', 'd3', 'd4', 'd5'].forEach(day => {
+      const chip = document.querySelector(`.m-chip[data-day="${day}"]`);
+      if (!chip || !chip.classList.contains('on')) return;
+
+      const places = window.currentScheduleDocs[day];
+      if (!places || places.length === 0) return;
+
+      const latlngs = places.map(p => new kakao.maps.LatLng(p.place.lat, p.place.lng));
+
+      const polyline = new kakao.maps.Polyline({
+        path: latlngs,
+        strokeWeight: 3,
+        strokeColor: DAY_COLORS[day],
+        strokeOpacity: 0.8,
+        strokeStyle: 'shortdash'
+      });
+      polyline.setMap(window.mainMap);
+
+      const overlays = places.map((p, i) => {
+        const safeName = p.place.name.replace(/'/g, "\\'");
+        const iconHtml = `
+          <div style="position:relative; font-family:sans-serif; cursor:pointer;" onclick="window.openStopLinks('${safeName}', ${p.place.lat}, ${p.place.lng})">
+            <div style="position:absolute; left:-14px; top:-14px; width:28px; height:28px; background:${DAY_COLORS[day]}; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; border:2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index:2;">${i + 1}</div>
+            <div style="position:absolute; left:16px; top:-12px; background:rgba(255,255,255,0.95); border:1.5px solid ${DAY_COLORS[day]}; color:#222; padding:3px 8px; border-radius:6px; font-size:12.5px; font-weight:700; white-space:nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index:1;">${p.place.name}</div>
+          </div>
+        `;
+        const overlay = new kakao.maps.CustomOverlay({
+          position: new kakao.maps.LatLng(p.place.lat, p.place.lng),
+          content: iconHtml,
+          xAnchor: 0,
+          yAnchor: 0,
+          zIndex: 2
+        });
+        overlay.setMap(window.mainMap);
+        return overlay;
+      });
+
+      window.dayLayers[day] = { polyline, overlays };
+    });
+  };
+
+  window.drawExploreMarkers = function() {
+    // 마커를 다시 그리기 전, 열려있던 팝업이 있으면 먼저 닫기 (꺼진 장소의 팝업이 남아있는 버그 방지)
+    if (window.lastInfoWindow) {
+      window.lastInfoWindow.close();
+      window.lastInfoWindow = null;
+    }
+
+    Object.values(window.exploreMarkers).forEach(m => m.setMap(null));
+    Object.values(window.exploreLabels).forEach(l => l.setMap(null));
+    window.exploreMarkers = {};
+    window.exploreLabels = {};
+    window.exploreInfoWindows = {};
+
+    window.activeExploreKeys.forEach(key => {
+      const p = ALL_PLACES[key];
+      if(!p) return;
+
+      const pal = CAT_PALETTE[p.category] || { text: "#555", pin: "#888" };
+
+      const marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(p.lat, p.lng),
+        image: makeDotImage(pal.pin || pal.text)
+      });
+      marker.setMap(window.mainMap);
+
+      // 작은 지명 라벨 (메인 일정 마커 글자보다 작게)
+      const labelOverlay = new kakao.maps.CustomOverlay({
+        position: new kakao.maps.LatLng(p.lat, p.lng),
+        content: `<div style="margin-top:15px; font-size:10.5px; font-weight:700; color:#3A352F; background:rgba(255,255,255,0.88); padding:1px 6px; border-radius:5px; white-space:nowrap; box-shadow:0 1px 3px rgba(0,0,0,0.15); pointer-events:none;">${p.name}</div>`,
+        xAnchor: 0.5,
+        yAnchor: 0,
+        zIndex: 1
+      });
+      labelOverlay.setMap(window.mainMap);
+      window.exploreLabels[key] = labelOverlay;
+
+      const popupHtml = `
+        <div class="popup-content">
+          <div class="popup-title-row">
+            <h3 class="popup-title">${p.name}</h3>
+            <span class="popup-cat" style="background:${pal.bg}; color:${pal.text};">${p.category}</span>
+          </div>
+          <div class="popup-controls">
+            <select id="popup-sel-${key}" class="popup-select">
+              <option value="d1">1일 차</option>
+              <option value="d2">2일 차</option>
+              <option value="d3">3일 차</option>
+              <option value="d4">4일 차</option>
+              <option value="d5">5일 차</option>
+            </select>
+            <button class="popup-btn" onclick="window.addFromPopup('${key}')">추가</button>
+          </div>
+          <div class="link-row">
+            <a href="javascript:void(0)" onclick="window.openKakaoDetailByName('${window.escJs(p.name)}', ${p.lat}, ${p.lng})" class="kakao-link">🗺️ 카카오맵</a>
+            <a href="javascript:void(0)" onclick="window.kakaoNaviStart('${window.escJs(p.name)}', ${p.lat}, ${p.lng})" class="nav-link">🧭 길찾기 (모바일 전용)</a>
+          </div>
+        </div>
+      `;
+      const infowindow = new kakao.maps.InfoWindow({ content: `<div style="padding:10px;">${popupHtml}</div>`, removable: true });
+
+      kakao.maps.event.addListener(marker, 'click', () => {
+        if (window.lastInfoWindow) window.lastInfoWindow.close();
+        window.clearSearchResultMarker();
+        infowindow.open(window.mainMap, marker);
+        window.lastInfoWindow = infowindow;
+      });
+
+      window.exploreMarkers[key] = marker;
+      window.exploreInfoWindows[key] = infowindow;
+    });
+  };
+
+  const mapChips = document.querySelectorAll('.m-chip.schedule-chip');
+  mapChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const dayKey = chip.dataset.day;
+      if (dayKey === 'all') {
+        const isTurningOn = !chip.classList.contains('on');
+        mapChips.forEach(c => c.classList.toggle('on', isTurningOn));
+      } else {
+        chip.classList.toggle('on');
+        const nowOn = chip.classList.contains('on');
+        const allDayChips = Array.from(mapChips).filter(c => c.dataset.day !== 'all');
+        document.querySelector('.m-chip[data-day="all"]').classList.toggle('on', allDayChips.every(c => c.classList.contains('on')));
+
+        // 켤 때만 왼쪽 리스트를 그 날짜 섹션으로 펼치고 스크롤 (끌 때는 그대로 유지)
+        if (nowOn) {
+          const section = document.getElementById(`sec-${dayKey}`);
+          if (section) {
+            section.classList.remove('collapsed');
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }
+      window.drawScheduleLayers();
+    });
+  });
+
+</script>
+
+<div id="install-banner" class="install-banner">
+  <span class="ib-icon">📲</span>
+  <span class="ib-text" id="install-banner-text"></span>
+  <button class="ib-close" id="install-banner-close">✕</button>
+</div>
+
+<div id="identity-modal" class="identity-modal-overlay">
+  <div class="identity-modal">
+    <div class="identity-modal-title">누구세요?</div>
+    <div class="identity-modal-sub">한 번만 물어보고 다음부턴 자동으로 기억할게요</div>
+    <div class="identity-modal-buttons">
+      <button class="identity-btn" data-who="seunghyun">승현</button>
+      <button class="identity-btn soyoung" data-who="soyoung">소영</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
