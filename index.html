@@ -1789,6 +1789,12 @@ document.addEventListener('DOMContentLoaded', function setupInstallPrompt() {
 
       const latlngs = places.map(p => new kakao.maps.LatLng(p.place.lat, p.place.lng));
 
+      // 2~4일차는 전날 밤 숙소에서 자고 아침에 출발하는 구조라, 동선(폴리라인) 시작점에
+      // 숙소 좌표를 시각적으로만 추가해줌 (일정 목록/번호 마커에는 추가하지 않음)
+      if (day !== 'd1' && ALL_PLACES['p_base']) {
+        latlngs.unshift(new kakao.maps.LatLng(ALL_PLACES['p_base'].lat, ALL_PLACES['p_base'].lng));
+      }
+
       const polyline = new kakao.maps.Polyline({
         path: latlngs,
         strokeWeight: 3,
