@@ -35,14 +35,16 @@ Claude Code에서 이 파일을 참고해서 이어서 작업해주세요.
 - **packing_items**: id, text, seunghyun (bool), soyoung (bool), order
 - **presence**: who (seunghyun/soyoung), last_seen
 
-## 아직 결정 안 된 것 / Claude Code에서 이어서 논의할 것
+## 진행 상황
 
-- [ ] 위 테이블 스키마 최종 확정 (Supabase 대시보드에서 직접 만들지, SQL로 만들지)
-- [ ] Row Level Security(RLS) 정책 필요 여부 (2인 전용 앱이라 지금은 불필요할 수 있음)
-- [ ] index.html의 Firebase SDK 코드 (onSnapshot, addDoc, updateDoc 등)를 Supabase JS 클라이언트로 전환
-- [ ] 실시간 동기화: onSnapshot → `.channel().on('postgres_changes', ...)`로 교체
-- [ ] 오프라인 캐싱(enableIndexedDbPersistence)은 Supabase에 동급 기능이 약해서 대안 필요할 수도 있음
-- [ ] 마이그레이션 후 기존 Firebase 코드/설정 제거
+- [x] 테이블 스키마 확정 및 생성 (SQL Editor에서 `supabase/schema.sql`, `supabase/seed_places.sql` 실행 완료 — places 49개, schedule/packing_items 초기 데이터 포함)
+- [x] RLS: 켜고 anon 허용 정책 추가 (2인 전용 + 인증 없음, 나중에 인증 추가 시 정책만 교체하면 됨)
+- [x] index.html의 Firebase SDK 코드를 Supabase JS 클라이언트로 전환 — `js/supabaseClient.js`, `js/places.js`, `js/schedule.js`, `js/packing.js`, `js/presence.js`, `js/map.js`로 기능별 분리
+- [x] 실시간 동기화: onSnapshot → `.channel().on('postgres_changes', ...)`로 교체
+- [x] 마이그레이션 후 기존 Firebase 코드/설정 제거 (index.html에서 firebaseConfig, SDK import 전부 삭제 확인 완료)
+- [x] 로컬 서버로 데이터 흐름(장소/일정/준비물/presence) 테스트 완료 — 카카오맵은 로컬 주소가 카카오 도메인 화이트리스트에 없어서 미확인, 추후 Vercel 배포 시 최종 확인 예정
+- [x] 오프라인 캐싱(enableIndexedDbPersistence) 대안 — 구현하지 않기로 결정 (온라인 전용으로 운영)
+- [ ] Vercel 재배포 후 카카오맵 포함 최종 확인 (git 재연결 → 커밋/푸시 이후 진행 예정)
 
 ## 사용자 선호 사항 (Claude Code 작업 시 반드시 지킬 것)
 
